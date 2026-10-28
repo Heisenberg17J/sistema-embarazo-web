@@ -6,6 +6,7 @@ import {
     FlaskConical,
     type LucideIcon,
 } from "lucide-react";
+import Link from "next/link";
 import { marcaTiempo } from "@/lib/formato";
 import { ESTADO_CITA_TEXTO } from "@/lib/formato";
 import type { EventoHistorial } from "@/lib/tipos";
@@ -45,6 +46,15 @@ const ESTILO: Record<
         color: "text-critica",
         fondo: "bg-critica-suave",
     },
+};
+
+/** Pestaña de la ficha de la paciente donde vive cada tipo de registro. */
+const SECCION_FICHA: Record<EventoHistorial["tipo"], string> = {
+    CONTROL: "controles",
+    SINTOMA: "sintomas",
+    EXAMEN: "examenes",
+    CITA: "citas",
+    ALERTA: "alertas",
 };
 
 /** Historial cronológico unificado (RF-09). */
@@ -92,6 +102,16 @@ export function LineaTiempo({ eventos }: { eventos: EventoHistorial[] }) {
                                     {marcaTiempo(evento.fecha)}
                                 </p>
                             </div>
+                            {evento.gestante && evento.gestante_id && (
+                                <p className="mt-1 text-sm">
+                                    <Link
+                                        href={`/pro/pacientes/${evento.gestante_id}?seccion=${SECCION_FICHA[evento.tipo]}`}
+                                        className="font-medium text-brand-deep underline-offset-2 hover:underline"
+                                    >
+                                        {evento.gestante}
+                                    </Link>
+                                </p>
+                            )}
                             {evento.detalle && (
                                 <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                                     {evento.detalle}

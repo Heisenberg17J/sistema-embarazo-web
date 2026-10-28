@@ -12,6 +12,8 @@ import {
     opcionesCookie,
 } from "@/lib/sesion";
 import type { Rol, Usuario } from "@/lib/tipos";
+import { hoyLocal } from "@/lib/formato";
+import { VERSION_POLITICA } from "@/lib/politica";
 
 export interface EstadoFormulario {
     error?: string;
@@ -70,24 +72,26 @@ function aEstado(error: unknown, datos?: FormData): EstadoFormulario {
         const porCampo = error.porCampo;
         return {
             error: Object.keys(porCampo).length
-                ? "Revise los datos marcados."
+                ? "Revisa los datos marcados."
                 : error.message,
             porCampo: Object.keys(porCampo).length ? porCampo : undefined,
             valores,
         };
     }
-    return { error: "Ocurrió un error inesperado. Intente de nuevo.", valores };
+    return { error: "Ocurrió un error inesperado. Intenta de nuevo.", valores };
 }
 
 /** Convierte los errores de zod al mismo formato por campo. */
 function aEstadoZod(error: z.ZodError, datos: FormData): EstadoFormulario {
-    return {
-        error: "Revise los datos marcados.",
-        porCampo: Object.fromEntries(
-            error.issues.map((i) => [i.path.join(".") || "general", i.message]),
-        ),
-        valores: valoresDe(datos),
-    };
+    // Un campo puede incumplir varias reglas (una contraseña corta y sin número):
+    // se muestra la primera, que es la que hay que arreglar antes. Con
+    // Object.fromEntries ganaría la última.
+    const porCampo: Record<string, string> = {};
+    for (const i of error.issues) {
+        const campo = i.path.join(".") || "general";
+        if (!(campo in porCampo)) porCampo[campo] = i.message;
+    }
+    return { error: "Revisa los datos marcados.", porCampo, valores: valoresDe(datos) };
 }
 
 /** Solo rutas internas, para que `siguiente` no sirva de redirección abierta. */
@@ -101,8 +105,8 @@ const destinoSeguro = (siguiente: unknown, rol: Rol) => {
 // ---------------------------------------------------------------------------
 
 const esquemaLogin = z.object({
-    correo: z.string().trim().min(1, "Escriba su correo").email("Correo electrónico inválido"),
-    contrasena: z.string().min(1, "Escriba su contraseña"),
+    correo: z.string().trim().min(1, "Escribe tu correo").email("Correo electrónico inválido"),
+    contrasena: z.string().min(1, "Escribe tu contraseña"),
 });
 
 export async function iniciarSesion(
@@ -150,8 +154,8 @@ const opcional = (esquema: z.ZodString) =>
 
 const esquemaRegistro = z
     .object({
-        nombre: z.string().trim().min(1, "Escriba su nombre").max(80),
-        apellido: z.string().trim().min(1, "Escriba su apellido").max(80),
+        nombre: z.string().trim().min(1, "Escribe tu nombre").max(80),
+        apellido: z.string().trim().min(1, "Escribe tu apellido").max(80),
         correo: z.string().trim().toLowerCase().email("Correo electrónico inválido"),
         contrasena: contrasenaSegura,
         confirmacion: z.string(),
@@ -162,8 +166,8 @@ const esquemaRegistro = z
             .regex(/^[A-Za-z0-9]{4,20}$/, "Entre 4 y 20 letras o números"),
         fecha_nacimiento: z
             .string()
-            .regex(/^\d{4}-\d{2}-\d{2}$/, "Indique su fecha de nacimiento")
-            .refine((v) => v < new Date().toISOString().slice(0, 10), "La fecha no puede ser futura"),
+            .regex(/^\d{4}-\d{2}-\d{2}$/, "Indica tu fecha de nacimiento")
+            .refine((v) => v < hoyLocal(), "La fecha no puede ser futura"),
         telefono: opcional(z.string().trim().regex(/^[0-9+()\s-]{7,20}$/, "Teléfono inválido")),
         eps: opcional(z.string().trim().max(80)),
         grupo_sanguineo: z.preprocess(
@@ -174,6 +178,10 @@ const esquemaRegistro = z
         contacto_emergencia_telefono: opcional(
             z.string().trim().regex(/^[0-9+()\s-]{7,20}$/, "Teléfono inválido"),
         ),
+        // Una casilla desmarcada no viaja en el formulario: llega `undefined`.
+        acepto_politica: z.literal("on", {
+            error: "Debes aceptar la política de tratamiento de datos para crear tu cuenta",
+        }),
     })
     .refine((d) => d.contrasena === d.confirmacion, {
         message: "Las contraseñas no coinciden",
@@ -187,7 +195,9 @@ export async function registrarGestante(
     const valido = esquemaRegistro.safeParse(Object.fromEntries(datos));
     if (!valido.success) return aEstadoZod(valido.error, datos);
 
-    const { confirmacion: _c, ...cuerpo } = valido.data;
+    const { confirmacion: _c, ...resto } = valido.data;
+    // El backend guarda qué versión del texto aceptó la persona.
+    const cuerpo = { ...resto, acepto_politica: true, version_politica: VERSION_POLITICA };
     try {
         const sesion = await api.post<RespuestaSesion>("/auth/registro", cuerpo, {
             sinToken: true,
@@ -205,7 +215,7 @@ export async function registrarGestante(
 
 const esquemaContrasena = z
     .object({
-        contrasena_actual: z.string().min(1, "Escriba su contraseña actual"),
+        contrasena_actual: z.string().min(1, "Escribe tu contraseña actual"),
         contrasena_nueva: contrasenaSegura,
         confirmacion: z.string(),
     })
@@ -235,6 +245,68 @@ export async function cambiarContrasena(
     // El backend revoca todas las sesiones al cambiar la contraseña,
     // así que hay que volver a entrar.
     await limpiarSesion();
+    redirect("/login?cambiada=1");
+}
+
+// ---------------------------------------------------------------------------
+// Recuperación de contraseña
+
+export interface EstadoRecuperacion extends EstadoFormulario {
+    ok?: boolean;
+    mensaje?: string;
+}
+
+const esquemaRecuperar = z.object({
+    correo: z.string().trim().toLowerCase().min(1, "Escribe tu correo").email("Correo electrónico inválido"),
+});
+
+/**
+ * La respuesta es la misma exista o no el correo: así el formulario no sirve
+ * para averiguar quién tiene cuenta. Un fallo de la API se muestra igual que un
+ * éxito solo si es un 4xx de validación; los demás sí se informan.
+ */
+export async function solicitarRecuperacion(
+    _previo: EstadoRecuperacion,
+    datos: FormData,
+): Promise<EstadoRecuperacion> {
+    const valido = esquemaRecuperar.safeParse(Object.fromEntries(datos));
+    if (!valido.success) return aEstadoZod(valido.error, datos);
+
+    try {
+        const r = await api.post<{ mensaje: string }>("/auth/recuperar", valido.data, {
+            sinToken: true,
+        });
+        return { ok: true, mensaje: r.mensaje };
+    } catch (error) {
+        return aEstado(error, datos);
+    }
+}
+
+const esquemaRestablecer = z
+    .object({
+        token: z.string().regex(/^[a-f0-9]{64}$/, "El enlace no es válido"),
+        contrasena_nueva: contrasenaSegura,
+        confirmacion: z.string(),
+    })
+    .refine((d) => d.contrasena_nueva === d.confirmacion, {
+        message: "Las contraseñas no coinciden",
+        path: ["confirmacion"],
+    });
+
+export async function restablecerContrasena(
+    _previo: EstadoFormulario,
+    datos: FormData,
+): Promise<EstadoFormulario> {
+    const valido = esquemaRestablecer.safeParse(Object.fromEntries(datos));
+    if (!valido.success) return aEstadoZod(valido.error, datos);
+
+    const { confirmacion: _c, ...cuerpo } = valido.data;
+    try {
+        await api.post("/auth/restablecer", cuerpo, { sinToken: true });
+    } catch (error) {
+        return aEstado(error, datos);
+    }
+
     redirect("/login?cambiada=1");
 }
 

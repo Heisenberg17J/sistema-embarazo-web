@@ -14,8 +14,6 @@ export const metadata: Metadata = { title: "Configuración" };
 const NOMBRES: Record<string, string> = {
     semanas_max_gestacion: "Semana máxima de gestación",
     dias_recordatorio_cita: "Días de aviso antes de una cita",
-    sesion_horas_vigencia: "Vigencia de la sesión (horas)",
-    backup_frecuencia_horas: "Frecuencia del respaldo (horas)",
 };
 
 const legible = (clave: string) => {

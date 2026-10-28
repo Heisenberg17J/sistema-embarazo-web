@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { CalendarCheck, CalendarPlus, PencilLine, Save } from "lucide-react";
 import {
     cerrarCita,
@@ -14,6 +14,7 @@ import { AvisoExito } from "@/components/ui/aviso-exito";
 import { AvisoError, Campo } from "@/components/ui/campo";
 import { hoyLocal } from "@/lib/formato";
 import type { Cita, Paciente, TipoControl } from "@/lib/tipos";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: ResultadoAccion = {};
 
@@ -77,7 +78,7 @@ function FormularioNueva({
     embarazoId?: number;
     onExito: () => void;
 }) {
-    const [estado, enviar, enviando] = useActionState(crearCita, INICIAL);
+    const [estado, enviar, enviando] = useAccion(crearCita, INICIAL);
     const e = estado.porCampo ?? {};
     const v = estado.valores ?? {};
     // Controlados: un <select> no controlado pierde la opción elegida cuando
@@ -100,7 +101,7 @@ function FormularioNueva({
     }
 
     return (
-        <form action={enviar} className="space-y-4" noValidate>
+        <form onSubmit={enviar} className="space-y-4" noValidate>
             <AvisoError>{estado.error}</AvisoError>
             {estado.ok && <AvisoExito>{estado.resumen}</AvisoExito>}
 
@@ -239,7 +240,7 @@ function FormularioReprogramar({
     cita: Cita;
     onExito: () => void;
 }) {
-    const [estado, enviar, enviando] = useActionState(reprogramarCita, INICIAL);
+    const [estado, enviar, enviando] = useAccion(reprogramarCita, INICIAL);
     const e = estado.porCampo ?? {};
 
     useEffect(() => {
@@ -248,7 +249,7 @@ function FormularioReprogramar({
     }, [estado]);
 
     return (
-        <form action={enviar} className="space-y-4" noValidate>
+        <form onSubmit={enviar} className="space-y-4" noValidate>
             <input type="hidden" name="cita_id" value={cita.id} />
 
             <AvisoError>{estado.error}</AvisoError>
@@ -337,7 +338,7 @@ function FormularioCerrar({
     onExito: () => void;
     cerrar: () => void;
 }) {
-    const [estado, enviar, enviando] = useActionState(cerrarCita, INICIAL);
+    const [estado, enviar, enviando] = useAccion(cerrarCita, INICIAL);
     const e = estado.porCampo ?? {};
     const [resultado, setResultado] = useState("CUMPLIDA");
 
@@ -347,7 +348,7 @@ function FormularioCerrar({
     }, [estado]);
 
     return (
-        <form action={enviar} className="space-y-4" noValidate>
+        <form onSubmit={enviar} className="space-y-4" noValidate>
             <input type="hidden" name="cita_id" value={cita.id} />
             <AvisoError>{estado.error}</AvisoError>
 

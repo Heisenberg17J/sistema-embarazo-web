@@ -29,10 +29,10 @@ function aResultado(error: unknown): ResultadoRegistro {
     if (error instanceof ErrorApi) {
         const porCampo = error.porCampo;
         return Object.keys(porCampo).length
-            ? { error: "Revise los datos marcados.", porCampo }
+            ? { error: "Revisa los datos marcados.", porCampo }
             : { error: error.message };
     }
-    return { error: "No se pudo guardar. Intente de nuevo." };
+    return { error: "No se pudo guardar. Intenta de nuevo." };
 }
 
 // ---------------------------------------------------------------------------
@@ -44,14 +44,14 @@ const numero = (campo: string) =>
                 ? Number(v.replace(",", "."))
                 : undefined,
         z
-            .number({ error: `Escriba ${campo}` })
+            .number({ error: `Escribe ${campo}` })
             .finite(`${campo} debe ser un número`)
             .positive(`${campo} debe ser mayor que cero`),
     );
 
 const esquemaMedicion = z
     .object({
-        tipo: z.string().trim().min(1, "Elija qué desea registrar"),
+        tipo: z.string().trim().min(1, "Elige qué quieres registrar"),
         valor: z.unknown().optional(),
         sistolica: z.unknown().optional(),
         diastolica: z.unknown().optional(),
@@ -87,7 +87,7 @@ export async function registrarMedicion(
     const valido = esquemaMedicion.safeParse(Object.fromEntries(datos));
     if (!valido.success) {
         return {
-            error: "Revise los datos marcados.",
+            error: "Revisa los datos marcados.",
             porCampo: Object.fromEntries(
                 valido.error.issues.map((i) => [i.path.join(".") || "tipo", i.message]),
             ),
@@ -98,7 +98,7 @@ export async function registrarMedicion(
 
     const embarazo = await embarazoActivo();
     if (!embarazo) {
-        return { error: "Primero debe registrar su embarazo." };
+        return { error: "Primero registra tu embarazo." };
     }
 
     const mediciones =
@@ -149,7 +149,7 @@ const esquemaSintoma = z
         ),
     })
     .refine((d) => d.tipo || d.descripcion, {
-        message: "Elija un síntoma de la lista o descríbalo",
+        message: "Elige un síntoma de la lista o descríbelo",
         path: ["descripcion"],
     });
 
@@ -160,7 +160,7 @@ export async function registrarSintoma(
     const valido = esquemaSintoma.safeParse(Object.fromEntries(datos));
     if (!valido.success) {
         return {
-            error: "Revise los datos marcados.",
+            error: "Revisa los datos marcados.",
             porCampo: Object.fromEntries(
                 valido.error.issues.map((i) => [i.path.join(".") || "tipo", i.message]),
             ),
@@ -169,7 +169,7 @@ export async function registrarSintoma(
 
     const embarazo = await embarazoActivo();
     if (!embarazo) {
-        return { error: "Primero debe registrar su embarazo." };
+        return { error: "Primero registra tu embarazo." };
     }
 
     try {

@@ -1,21 +1,23 @@
 "use client";
 
-import { useActionState } from "react";
+
 import { Check } from "lucide-react";
 import { registrarEmbarazo, type EstadoEmbarazo } from "@/acciones/embarazo";
 import { Boton } from "@/components/ui/boton";
 import { AvisoError, Campo } from "@/components/ui/campo";
+import { hoyLocal } from "@/lib/formato";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: EstadoEmbarazo = {};
 
 export function FormularioEmbarazo() {
-    const [estado, enviar, enviando] = useActionState(registrarEmbarazo, INICIAL);
+    const [estado, enviar, enviando] = useAccion(registrarEmbarazo, INICIAL);
     const e = estado.porCampo ?? {};
     const v = estado.valores ?? {};
-    const hoy = new Date().toISOString().slice(0, 10);
+    const hoy = hoyLocal();
 
     return (
-        <form action={enviar} className="mt-5 space-y-4" noValidate>
+        <form onSubmit={enviar} className="mt-5 space-y-4" noValidate>
             <AvisoError>{estado.error}</AvisoError>
 
             <Campo

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, ChevronRight } from "lucide-react";
+import { BookOpen, ChevronRight, ShieldQuestion, Stethoscope } from "lucide-react";
 import { Saludo } from "@/components/layout/saludo";
 import { Boton } from "@/components/ui/boton";
 import { EncabezadoTarjeta, Panel, Tarjeta } from "@/components/ui/tarjeta";
-import { panel } from "@/lib/datos";
+import { panel, revisionClinica, solicitudesSupresion } from "@/lib/datos";
 import { ESTADO_ALERTA_TEXTO, ESTADO_CITA_TEXTO } from "@/lib/formato";
 import { ROL_TEXTO } from "@/lib/navegacion";
 import { ESTILO_SEVERIDAD } from "@/lib/severidad";
@@ -29,7 +29,12 @@ const ESTADOS_ALERTA: EstadoAlerta[] = ["PENDIENTE", "REVISADA", "DESCARTADA"];
  */
 export default async function PaginaEstadisticas() {
     const sesion = await exigirRol("ADMINISTRADOR");
-    const datos = await panel<PanelAdministrador>();
+    const [datos, solicitudes, revision] = await Promise.all([
+        panel<PanelAdministrador>(),
+        solicitudesSupresion({ estado: "PENDIENTE", limit: 1 }),
+        revisionClinica(),
+    ]);
+    const solicitudesPendientes = solicitudes.paginacion.total;
 
     const suma = (filas: { total: number }[]) => filas.reduce((s, f) => s + f.total, 0);
     const usuariosActivos = datos.usuarios_por_rol.reduce((s, r) => s + r.activos, 0);
@@ -50,7 +55,49 @@ export default async function PaginaEstadisticas() {
             />
 
             <div className="space-y-5">
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {/* Cosas con plazo o con consecuencias que no deben esperar a que alguien las encuentre. */}
+                {(solicitudesPendientes > 0 || revision.pendientes > 0) && (
+                    <Tarjeta className="border-l-4 border-l-advertencia-borde">
+                        <EncabezadoTarjeta seccion="Requieren atención" />
+                        <ul className="mt-3 space-y-2">
+                            {solicitudesPendientes > 0 && (
+                                <li>
+                                    <Link
+                                        href="/admin/solicitudes"
+                                        className="glass-soft flex items-center gap-3 rounded-2xl p-3 transition-colors hover:bg-surface-strong"
+                                    >
+                                        <ShieldQuestion className="size-5 shrink-0 text-advertencia" aria-hidden />
+                                        <span className="flex-1 text-sm">
+                                            <strong>{solicitudesPendientes}</strong>{" "}
+                                            {solicitudesPendientes === 1
+                                                ? "solicitud de supresión de datos"
+                                                : "solicitudes de supresión de datos"}{" "}
+                                            por atender. La ley fija un plazo para responderlas.
+                                        </span>
+                                        <ChevronRight className="size-4 text-muted-foreground" aria-hidden />
+                                    </Link>
+                                </li>
+                            )}
+                            {revision.pendientes > 0 && (
+                                <li>
+                                    <Link
+                                        href="/admin/reglas-alerta"
+                                        className="glass-soft flex items-center gap-3 rounded-2xl p-3 transition-colors hover:bg-surface-strong"
+                                    >
+                                        <Stethoscope className="size-5 shrink-0 text-advertencia" aria-hidden />
+                                        <span className="flex-1 text-sm">
+                                            <strong>{revision.pendientes}</strong> reglas de alerta o signos
+                                            de alarma sin aprobación de un profesional de salud.
+                                        </span>
+                                        <ChevronRight className="size-4 text-muted-foreground" aria-hidden />
+                                    </Link>
+                                </li>
+                            )}
+                        </ul>
+                    </Tarjeta>
+                )}
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <Dato
                         etiqueta="Cuentas activas"
                         valor={usuariosActivos}
@@ -75,10 +122,10 @@ export default async function PaginaEstadisticas() {
                     />
                 </div>
 
-                <div className="grid items-start gap-5 lg:grid-cols-2">
+                <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
                     <Tarjeta>
                         <EncabezadoTarjeta seccion="Cuentas" titulo="Usuarios por rol" />
-                        <div className="mt-4 overflow-x-auto">
+                        <div className="mt-4 overflow-x-auto" role="region" aria-label="Usuarios por rol" tabIndex={0}>
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
@@ -115,7 +162,7 @@ export default async function PaginaEstadisticas() {
                             titulo="Por severidad y estado"
                             descripcion="Las revisan los profesionales asignados."
                         />
-                        <div className="mt-4 overflow-x-auto">
+                        <div className="mt-4 overflow-x-auto" role="region" aria-label="Alertas por severidad y estado" tabIndex={0}>
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">

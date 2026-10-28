@@ -1,19 +1,20 @@
 "use client";
 
-import { useActionState } from "react";
+
 import { Check } from "lucide-react";
 import { cambiarContrasena, type EstadoFormulario } from "@/acciones/auth";
 import { Boton } from "@/components/ui/boton";
 import { AvisoError, Campo } from "@/components/ui/campo";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: EstadoFormulario = {};
 
 export function FormularioContrasena() {
-    const [estado, enviar, enviando] = useActionState(cambiarContrasena, INICIAL);
+    const [estado, enviar, enviando] = useAccion(cambiarContrasena, INICIAL);
     const e = estado?.porCampo ?? {};
 
     return (
-        <form action={enviar} className="mt-5 space-y-4" noValidate>
+        <form onSubmit={enviar} className="mt-5 space-y-4" noValidate>
             <AvisoError>{estado?.error}</AvisoError>
 
             <Campo

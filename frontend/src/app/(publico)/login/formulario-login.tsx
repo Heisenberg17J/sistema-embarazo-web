@@ -1,20 +1,22 @@
 "use client";
 
-import { useActionState } from "react";
+import Link from "next/link";
+
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { useState } from "react";
 import { iniciarSesion, type EstadoFormulario } from "@/acciones/auth";
 import { Boton } from "@/components/ui/boton";
 import { AvisoError, Campo } from "@/components/ui/campo";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: EstadoFormulario = {};
 
 export function FormularioLogin({ siguiente }: { siguiente?: string }) {
-    const [estado, enviar, enviando] = useActionState(iniciarSesion, INICIAL);
+    const [estado, enviar, enviando] = useAccion(iniciarSesion, INICIAL);
     const [verClave, setVerClave] = useState(false);
 
     return (
-        <form action={enviar} className="mt-5 space-y-4" noValidate>
+        <form onSubmit={enviar} className="mt-5 space-y-4" noValidate>
             {siguiente && <input type="hidden" name="siguiente" value={siguiente} />}
 
             <AvisoError>{estado?.error}</AvisoError>
@@ -71,6 +73,15 @@ export function FormularioLogin({ siguiente }: { siguiente?: string }) {
                     </div>
                 )}
             </Campo>
+
+            <p className="-mt-1 text-right text-sm">
+                <Link
+                    href="/recuperar"
+                    className="font-semibold text-brand-deep underline-offset-4 hover:underline"
+                >
+                    ¿Olvidaste tu contraseña?
+                </Link>
+            </p>
 
             <Boton type="submit" ancho="completo" tamano="lg" disabled={enviando}>
                 <LogIn aria-hidden />

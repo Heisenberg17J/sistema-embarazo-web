@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { HeartPulse, Scale, TrendingUp } from "lucide-react";
+import { eliminarMedicion } from "@/acciones/correcciones";
+import { DialogoCorregirMedicion } from "@/components/formularios/dialogo-corregir-medicion";
+import { DialogoEliminar } from "@/components/formularios/dialogo-eliminar";
 import { DialogoMedicion } from "@/components/formularios/dialogo-medicion";
 import { Saludo } from "@/components/layout/saludo";
 import { GraficaEvolucion } from "@/components/paneles/grafica-evolucion";
@@ -10,6 +13,7 @@ import { EncabezadoTarjeta, Panel, Tarjeta } from "@/components/ui/tarjeta";
 import { Vacio } from "@/components/ui/vacio";
 import {
     embarazoActivo,
+    mediciones,
     serieMediciones,
     tiposMedicion,
     usuarioActual,
@@ -49,12 +53,13 @@ export default async function PaginaEvolucion({
     }
 
     const catalogo = await tiposMedicion();
-    const [serie, usuario] = await Promise.all([
+    const [serie, usuario, recientes] = await Promise.all([
         serieMediciones(
             embarazo.embarazo_id,
             catalogo.map((t) => t.codigo),
         ),
         usuarioActual(),
+        mediciones(embarazo.embarazo_id, { limit: 10 }),
     ]);
 
     const conDatos = (tipo: string) =>
@@ -166,6 +171,56 @@ export default async function PaginaEvolucion({
                             tipos={PRESION}
                             unidad="mmHg"
                         />
+                    )}
+
+                    {recientes.datos.length > 0 && (
+                        <Tarjeta>
+                            <EncabezadoTarjeta
+                                seccion="Tus registros"
+                                titulo="Últimos registros"
+                                descripcion="¿Escribiste mal un valor? Puedes corregirlo o eliminarlo durante las 24 horas siguientes a haberlo guardado."
+                            />
+                            <ul className="mt-4 space-y-2">
+                                {recientes.datos.map((m) => (
+                                    <li
+                                        key={m.id}
+                                        className="glass-soft flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-2xl px-4 py-3"
+                                    >
+                                        <div className="min-w-0">
+                                            <p className="font-medium">
+                                                {m.nombre}:{" "}
+                                                <span className="font-display">
+                                                    {m.valor} {m.unidad}
+                                                </span>
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {marcaTiempo(m.fecha_registro)}
+                                                {m.origen === "PROFESIONAL" && " · tomada en consulta"}
+                                            </p>
+                                        </div>
+                                        {m.editable && (
+                                            <div className="flex items-center gap-1">
+                                                <DialogoCorregirMedicion
+                                                    embarazoId={embarazo.embarazo_id}
+                                                    medicion={m}
+                                                    contactoNombre={perfil?.contacto_emergencia_nombre}
+                                                    contactoTelefono={perfil?.contacto_emergencia_telefono}
+                                                />
+                                                <DialogoEliminar
+                                                    titulo="Eliminar este registro"
+                                                    descripcion={`${m.nombre}: ${m.valor} ${m.unidad}`}
+                                                    accion={eliminarMedicion}
+                                                    embarazoId={embarazo.embarazo_id}
+                                                    elementoId={m.id}
+                                                >
+                                                    <p>Dejará de aparecer en tus gráficas.</p>
+                                                </DialogoEliminar>
+                                            </div>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        </Tarjeta>
                     )}
 
                     {otroActivo && (

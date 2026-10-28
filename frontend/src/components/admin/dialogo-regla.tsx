@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Pencil, Plus, Save } from "lucide-react";
 import { guardarRegla, type ResultadoAdmin } from "@/acciones/admin";
 import { Casilla } from "@/components/admin/dialogo-catalogo";
@@ -11,6 +11,7 @@ import { AvisoError, Campo } from "@/components/ui/campo";
 import { SEVERIDAD_TEXTO } from "@/lib/formato";
 import { OPERADOR_TEXTO } from "@/lib/reglas";
 import type { OperadorRegla, ReglaAlerta, Severidad, TipoMedicion } from "@/lib/tipos";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: ResultadoAdmin = {};
 
@@ -55,7 +56,7 @@ function Formulario({
     tipos: TipoMedicion[];
     onExito: () => void;
 }) {
-    const [estado, enviar, enviando] = useActionState(guardarRegla, INICIAL);
+    const [estado, enviar, enviando] = useAccion(guardarRegla, INICIAL);
     const e = estado.porCampo ?? {};
     const v = estado.valores ?? {};
     const inicial = (campo: keyof ReglaAlerta, porDefecto = "") =>
@@ -78,7 +79,7 @@ function Formulario({
     const etiquetaValor = (texto: string) => (unidad ? `${texto} (${unidad})` : texto);
 
     return (
-        <form action={enviar} className="space-y-4" noValidate>
+        <form onSubmit={enviar} className="space-y-4" noValidate>
             {regla && <input type="hidden" name="regla_id" value={regla.id} />}
             <AvisoError>{estado.error}</AvisoError>
 

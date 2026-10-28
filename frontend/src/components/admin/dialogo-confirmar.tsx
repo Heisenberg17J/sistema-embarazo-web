@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useEffect, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import type { ResultadoAdmin } from "@/acciones/admin";
 import { DialogoAccion } from "@/components/formularios/dialogo-accion";
 import { Boton } from "@/components/ui/boton";
 import { AvisoError } from "@/components/ui/campo";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: ResultadoAdmin = {};
 
@@ -72,7 +73,7 @@ function Formulario({
     cerrar: () => void;
     children?: ReactNode;
 }) {
-    const [estado, enviar, enviando] = useActionState(accion, INICIAL);
+    const [estado, enviar, enviando] = useAccion(accion, INICIAL);
 
     useEffect(() => {
         if (estado.ok) cerrar();
@@ -80,7 +81,7 @@ function Formulario({
     }, [estado]);
 
     return (
-        <form action={enviar} className="space-y-4">
+        <form onSubmit={enviar} className="space-y-4">
             {Object.entries(campos).map(([nombre, valor]) => (
                 <input key={nombre} type="hidden" name={nombre} value={valor} />
             ))}

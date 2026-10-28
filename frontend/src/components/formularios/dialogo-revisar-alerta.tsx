@@ -1,12 +1,13 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCheck } from "lucide-react";
 import { revisarAlerta, type ResultadoAccion } from "@/acciones/profesional";
 import { DialogoAccion } from "@/components/formularios/dialogo-accion";
 import { Boton } from "@/components/ui/boton";
 import { AvisoError, Campo } from "@/components/ui/campo";
 import type { Alerta } from "@/lib/tipos";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: ResultadoAccion = {};
 
@@ -43,7 +44,7 @@ function Formulario({
     onExito: () => void;
     cerrar: () => void;
 }) {
-    const [estado, enviar, enviando] = useActionState(revisarAlerta, INICIAL);
+    const [estado, enviar, enviando] = useAccion(revisarAlerta, INICIAL);
     const e = estado.porCampo ?? {};
     const [resultado, setResultado] = useState("REVISADA");
 
@@ -53,7 +54,7 @@ function Formulario({
     }, [estado]);
 
     return (
-        <form action={enviar} className="space-y-4" noValidate>
+        <form onSubmit={enviar} className="space-y-4" noValidate>
             <input type="hidden" name="alerta_id" value={alertaId} />
             <AvisoError>{estado.error}</AvisoError>
 

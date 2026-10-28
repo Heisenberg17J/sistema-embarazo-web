@@ -16,6 +16,34 @@ export function reiniciarBase() {
     });
 }
 
+/**
+ * Crea un enlace de recuperación de contraseña y devuelve su token.
+ *
+ * El token real solo viaja por correo y en la base solo queda su hash, así que
+ * la prueba lo genera ella misma e inserta el hash, igual que lo haría el backend.
+ */
+export function crearTokenDeRecuperacion(correo: string): string {
+    const script = `
+        const crypto = require('crypto');
+        const { pool } = require('./src/config/db');
+        (async () => {
+            const token = crypto.randomBytes(32).toString('hex');
+            const hash = crypto.createHash('sha256').update(token).digest('hex');
+            const r = await pool.query(
+                "INSERT INTO recuperacion_contrasena (usuario_id, token_hash, expira_en) " +
+                "SELECT id, $1, now() + interval '1 hour' FROM usuario WHERE lower(correo) = $2",
+                [hash, process.argv[1]]
+            );
+            await pool.end();
+            if (!r.rowCount) { process.stderr.write('no existe ' + process.argv[1]); process.exit(1); }
+            process.stdout.write(token);
+        })();`;
+    return execFileSync(process.execPath, ["-e", script, correo.toLowerCase()], {
+        cwd: path.join(process.cwd(), "..", "backend"),
+        encoding: "utf8",
+    });
+}
+
 /** Credenciales de `db/seeds.sql`. */
 export const USUARIOS = {
     gestante: { correo: "maria.gomez@correo.co", contrasena: "Gest*2026" },
@@ -50,4 +78,58 @@ export async function almacenamientoVisible(page: Page) {
         local: JSON.stringify(window.localStorage),
         sesion: JSON.stringify(window.sessionStorage),
     }));
+}
+
+/**
+ * Registra una gestante nueva por la pantalla pública, aceptando la política.
+ * Devuelve la casilla de aceptación, que queda sin marcar para poder probar el rechazo.
+ */
+export async function registrarGestante(page: Page, correo: string, nombre: string) {
+    await page.goto("/registro");
+    const datos = page.getByRole("group", { name: "Tus datos" });
+    const acceso = page.getByRole("group", { name: "Acceso" });
+
+    await datos.getByLabel("Nombre").fill(nombre);
+    await datos.getByLabel("Apellido").fill("Prueba");
+    await datos.getByLabel("Número de documento").fill(`D${Date.now().toString().slice(-10)}`);
+    await datos.getByLabel("Fecha de nacimiento").fill("1995-03-10");
+    await acceso.getByLabel("Correo electrónico").fill(correo);
+    await acceso.getByLabel(/^Contraseña/).fill("Clave1234");
+    await acceso.getByLabel("Repetir contraseña").fill("Clave1234");
+    return page.getByRole("checkbox", { name: /Autorizo el tratamiento/ });
+}
+
+const API = process.env.API_URL ?? "http://localhost:4000/api/v1";
+
+/** Llama a la API como administrador (para preparar datos que la pantalla haría con muchos pasos). */
+async function comoAdmin<T>(ruta: string, cuerpo?: unknown): Promise<T> {
+    const login = await fetch(`${API}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ correo: USUARIOS.admin.correo, contrasena: USUARIOS.admin.contrasena }),
+    });
+    const { access_token: token } = (await login.json()) as { access_token: string };
+    const r = await fetch(`${API}${ruta}`, {
+        method: cuerpo ? "POST" : "GET",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: cuerpo ? JSON.stringify(cuerpo) : undefined,
+    });
+    if (!r.ok) throw new Error(`${ruta} respondió ${r.status}: ${await r.text()}`);
+    return (await r.json()) as T;
+}
+
+/** Asigna una gestante a un profesional por su correo. */
+export async function asignarPaciente(correoProfesional: string, correoGestante: string) {
+    const buscar = async (correo: string) => {
+        const lista = await comoAdmin<{ datos: { id: number; correo: string }[] }>(
+            `/usuarios?q=${encodeURIComponent(correo)}`,
+        );
+        const u = lista.datos.find((x) => x.correo.toLowerCase() === correo.toLowerCase());
+        if (!u) throw new Error(`No existe ${correo}`);
+        return u.id;
+    };
+    await comoAdmin("/asignaciones", {
+        profesional_id: await buscar(correoProfesional),
+        gestante_id: await buscar(correoGestante),
+    });
 }

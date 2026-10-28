@@ -1,22 +1,23 @@
 "use client";
 
-import { useActionState, useId } from "react";
+import { useId } from "react";
 import { Check, Save } from "lucide-react";
 import { guardarParametro, type ResultadoAdmin } from "@/acciones/admin";
 import { Boton } from "@/components/ui/boton";
 import type { ParametroSistema } from "@/lib/tipos";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: ResultadoAdmin = {};
 
 /** Un parámetro del sistema, editable en su propia fila. */
 export function FormularioParametro({ parametro }: { parametro: ParametroSistema }) {
-    const [estado, enviar, enviando] = useActionState(guardarParametro, INICIAL);
+    const [estado, enviar, enviando] = useAccion(guardarParametro, INICIAL);
     const id = useId();
     const error = estado.porCampo?.valor ?? estado.error;
     const numerico = /^-?\d+(\.\d+)?$/.test(parametro.valor);
 
     return (
-        <form action={enviar} className="flex flex-col gap-1.5 sm:items-end">
+        <form onSubmit={enviar} className="flex flex-col gap-1.5 sm:items-end">
             <input type="hidden" name="clave" value={parametro.clave} />
             <div className="flex gap-2">
                 <label htmlFor={id} className="sr-only">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FlaskConical, Save } from "lucide-react";
 import { registrarExamen, type ResultadoAccion } from "@/acciones/profesional";
 import { DialogoAccion } from "@/components/formularios/dialogo-accion";
@@ -9,6 +9,7 @@ import { AvisoExito } from "@/components/ui/aviso-exito";
 import { AvisoError, Campo } from "@/components/ui/campo";
 import { hoyLocal } from "@/lib/formato";
 import type { TipoExamen } from "@/lib/tipos";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: ResultadoAccion = {};
 
@@ -52,7 +53,7 @@ function Formulario({
     tipos: TipoExamen[];
     onExito: () => void;
 }) {
-    const [estado, enviar, enviando] = useActionState(registrarExamen, INICIAL);
+    const [estado, enviar, enviando] = useAccion(registrarExamen, INICIAL);
     const e = estado.porCampo ?? {};
     const v = estado.valores ?? {};
     // Controlado: si no, pierde la opción elegida cuando React restablece el
@@ -65,7 +66,7 @@ function Formulario({
     }, [estado]);
 
     return (
-        <form action={enviar} className="space-y-4" noValidate>
+        <form onSubmit={enviar} className="space-y-4" noValidate>
             <input type="hidden" name="embarazo_id" value={embarazoId} />
 
             <AvisoError>{estado.error}</AvisoError>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ClipboardPlus, Plus, Save, X } from "lucide-react";
 import { registrarControl, type ResultadoAccion } from "@/acciones/profesional";
 import { DialogoAccion } from "@/components/formularios/dialogo-accion";
@@ -10,6 +10,7 @@ import { AvisoExito } from "@/components/ui/aviso-exito";
 import { AvisoError, Campo } from "@/components/ui/campo";
 import { hoyLocal } from "@/lib/formato";
 import type { TipoMedicion } from "@/lib/tipos";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: ResultadoAccion = {};
 
@@ -79,7 +80,7 @@ function Formulario({
     citaId?: number;
     onExito: () => void;
 }) {
-    const [estado, enviar, enviando] = useActionState(registrarControl, INICIAL);
+    const [estado, enviar, enviando] = useAccion(registrarControl, INICIAL);
 
     const disponibles = tipos.filter((t) => t.activo);
     const [filas, setFilas] = useState<Fila[]>(() =>
@@ -105,7 +106,7 @@ function Formulario({
     };
 
     return (
-        <form action={enviar} className="space-y-4" noValidate>
+        <form onSubmit={enviar} className="space-y-4" noValidate>
             <input type="hidden" name="embarazo_id" value={embarazoId} />
             {citaId && <input type="hidden" name="cita_id" value={citaId} />}
 

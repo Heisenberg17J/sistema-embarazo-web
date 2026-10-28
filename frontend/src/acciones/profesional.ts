@@ -1,8 +1,10 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ErrorApi, api } from "@/lib/api";
 import type { Alerta, Cita, Control, Examen } from "@/lib/tipos";
+import { hoyLocal } from "@/lib/formato";
 
 /**
  * Acciones del profesional de salud.
@@ -59,13 +61,7 @@ const id = z.coerce.number().int().positive();
 const fecha = z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Indica la fecha")
-    .refine((v) => {
-        const d = new Date();
-        const hoy = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-            .toISOString()
-            .slice(0, 10);
-        return v <= hoy;
-    }, "La fecha no puede ser futura");
+    .refine((v) => v <= hoyLocal(), "La fecha no puede ser futura");
 const opcional = (max: number) =>
     z.preprocess(
         (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
@@ -308,6 +304,39 @@ export async function revisarAlerta(
                     ? "Alerta marcada como revisada."
                     : "Alerta descartada.",
         };
+    } catch (error) {
+        return aResultado(error, datos);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Aprobación clínica de reglas y signos de alarma
+// ---------------------------------------------------------------------------
+
+const esquemaAprobar = z.object({
+    tipo: z.enum(["regla", "signo"]),
+    elemento_id: id,
+});
+
+/**
+ * Deja constancia de que un profesional de salud avala una regla de alerta o un
+ * signo de alarma, con el texto que lee la gestante. Es una acción de un solo
+ * paso: revalida para que la lista llegue fresca en la misma respuesta.
+ */
+export async function aprobarElementoClinico(
+    _previo: ResultadoAccion,
+    datos: FormData,
+): Promise<ResultadoAccion> {
+    const valido = esquemaAprobar.safeParse(Object.fromEntries(datos));
+    if (!valido.success) return { error: "No se reconoce lo que se quiere aprobar." };
+
+    const { tipo, elemento_id: elementoId } = valido.data;
+    const ruta = tipo === "regla" ? "reglas-alerta" : "tipos-sintoma";
+    try {
+        await api.post(`/catalogos/${ruta}/${elementoId}/aprobar`);
+        revalidatePath("/pro", "layout");
+        revalidatePath("/admin", "layout");
+        return { ok: true };
     } catch (error) {
         return aResultado(error, datos);
     }

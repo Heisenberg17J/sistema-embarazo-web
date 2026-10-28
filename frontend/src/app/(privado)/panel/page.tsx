@@ -3,9 +3,11 @@ import Link from "next/link";
 import {
     Activity,
     BellRing,
+    CalendarClock,
     CalendarDays,
     ChevronRight,
     ClipboardList,
+    Phone,
     BookOpen,
     Target,
 } from "lucide-react";
@@ -48,6 +50,9 @@ import type { PerfilGestante } from "@/lib/tipos";
 export const metadata: Metadata = { title: "Panel" };
 
 const TIPOS_GRAFICA = ["PESO", "PA_SISTOLICA", "PA_DIASTOLICA"];
+
+const textoAnticipacion = (dias: number) =>
+    dias <= 0 ? "Es hoy" : dias === 1 ? "Es mañana" : `Faltan ${dias} días`;
 
 export default async function PaginaPanel() {
     const sesion = await exigirRol("GESTANTE");
@@ -172,6 +177,12 @@ export default async function PaginaPanel() {
                                                         datos.proxima_cita.hora,
                                                     )}
                                                 </p>
+                                                {datos.proxima_cita.recordatorio && (
+                                                    <Insignia tono="advertencia" className="mt-2">
+                                                        <CalendarClock aria-hidden />
+                                                        {textoAnticipacion(datos.proxima_cita.dias_para)}
+                                                    </Insignia>
+                                                )}
                                             </div>
                                             <Boton
                                                 comoHijo
@@ -191,8 +202,61 @@ export default async function PaginaPanel() {
                                         </p>
                                     )}
                                 </Panel>
+
+                                <Panel className="sm:col-span-2">
+                                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                        {datos.profesionales.length > 1 ? "Tu equipo de salud" : "Tu profesional de salud"}
+                                    </p>
+                                    {datos.profesionales.length === 0 ? (
+                                        <p className="mt-2 text-sm text-muted-foreground">
+                                            Todavía no tienes un profesional asignado. Cuando se te
+                                            asigne uno, aquí verás cómo contactarle.
+                                        </p>
+                                    ) : (
+                                        <ul className="mt-2 space-y-3">
+                                            {datos.profesionales.map((p) => (
+                                                <li
+                                                    key={p.id}
+                                                    className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2"
+                                                >
+                                                    <div className="min-w-0">
+                                                        {/* Sin truncate: un texto que no se parte fija el ancho mínimo de la
+                                                            columna y ensancha toda la página en móvil. */}
+                                                        <p className="break-words font-medium">{p.nombre}</p>
+                                                        <p className="break-words text-sm text-muted-foreground">
+                                                            {[p.especialidad, p.institucion]
+                                                                .filter(Boolean)
+                                                                .join(" · ")}
+                                                        </p>
+                                                    </div>
+                                                    {p.telefono && (
+                                                        <Boton comoHijo variante="contorno" tamano="sm">
+                                                            <a
+                                                                href={`tel:${p.telefono.replace(/[^\d+]/g, "")}`}
+                                                                aria-label={`Llamar a ${p.nombre}`}
+                                                            >
+                                                                <Phone aria-hidden />
+                                                                {p.telefono}
+                                                            </a>
+                                                        </Boton>
+                                                    )}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </Panel>
                             </div>
                         </div>
+
+                        <p className="mt-4 text-center text-xs text-muted-foreground">
+                            ¿Algún dato no está bien?{" "}
+                            <Link
+                                href="/embarazo"
+                                className="font-semibold text-brand-deep underline-offset-4 hover:underline"
+                            >
+                                Revisa y corrige tu embarazo
+                            </Link>
+                        </p>
 
                         {embarazo.peso && (
                             <Panel className="mt-3">

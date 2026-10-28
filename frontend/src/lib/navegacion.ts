@@ -1,5 +1,6 @@
 import {
     Activity,
+    Baby,
     BarChart3,
     Bell,
     BellRing,
@@ -12,6 +13,8 @@ import {
     ListTree,
     Settings,
     ShieldCheck,
+    ShieldQuestion,
+    Stethoscope,
     SlidersHorizontal,
     TrendingUp,
     UserCheck,
@@ -45,7 +48,9 @@ export const NAVEGACION: Record<
             { href: "/aprendizaje", texto: "Aprendizaje", icono: BookOpen, corto: "Aprender" },
         ],
         secundarios: [
+            { href: "/embarazo", texto: "Mi embarazo", icono: Baby },
             { href: "/alertas", texto: "Mis alertas", icono: Bell },
+            { href: "/controles", texto: "Controles", icono: ClipboardList },
             { href: "/sintomas", texto: "Síntomas", icono: Activity },
             { href: "/examenes", texto: "Exámenes", icono: FlaskConical },
             { href: "/historial", texto: "Historial", icono: History },
@@ -59,7 +64,11 @@ export const NAVEGACION: Record<
             { href: "/pro/agenda", texto: "Agenda", icono: CalendarDays },
             { href: "/pro/alertas", texto: "Alertas", icono: BellRing },
         ],
-        secundarios: [{ href: "/perfil", texto: "Mi perfil", icono: User }],
+        secundarios: [
+            { href: "/pro/actividad", texto: "Actividad", icono: History },
+            { href: "/pro/revision-clinica", texto: "Revisión clínica", icono: Stethoscope },
+            { href: "/perfil", texto: "Mi perfil", icono: User },
+        ],
     },
     ADMINISTRADOR: {
         principales: [
@@ -71,6 +80,7 @@ export const NAVEGACION: Record<
         secundarios: [
             { href: "/admin/catalogos", texto: "Catálogos", icono: ListTree },
             { href: "/admin/reglas-alerta", texto: "Reglas de alerta", icono: SlidersHorizontal },
+            { href: "/admin/solicitudes", texto: "Solicitudes de supresión", icono: ShieldQuestion },
             { href: "/admin/auditoria", texto: "Auditoría", icono: ShieldCheck },
             { href: "/admin/configuracion", texto: "Configuración", icono: Settings },
             { href: "/perfil", texto: "Mi perfil", icono: User },
@@ -92,7 +102,7 @@ export const ICONO_CONTROL = ClipboardList;
  * Las raíces de cada rol se comparan exactas: si no, "Panel" quedaría marcado
  * en todas las pantallas que cuelgan de ellas.
  */
-const RAICES = ["/panel", "/pro", "/admin"];
+const RAICES = ["/panel", "/pro", "/admin", "/embarazo"];
 
 export const esRutaActiva = (href: string, actual: string) =>
     RAICES.includes(href)

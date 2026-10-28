@@ -14,7 +14,13 @@ import type { Rol } from "@/lib/tipos";
 
 const API_URL = process.env.API_URL ?? "http://localhost:4000/api/v1";
 
-const RUTAS_PUBLICAS = ["/login", "/registro"];
+/**
+ * Se abren con o sin sesión y nunca redirigen: quien va a registrarse debe poder
+ * leer la política antes de aceptarla, y quien ya entró debe poder releerla.
+ */
+const RUTAS_LIBRES = ["/politica-de-privacidad", "/terminos"];
+
+const RUTAS_PUBLICAS = ["/login", "/registro", "/recuperar", "/restablecer"];
 
 /** Minutos de vida del token de acceso; el backend emite 15 min. */
 const MARGEN_RENOVACION_SEG = 60;
@@ -88,6 +94,10 @@ export async function middleware(req: NextRequest) {
         } catch {
             // Igual que arriba: no se cierra la sesión por un fallo de red.
         }
+    }
+
+    if (RUTAS_LIBRES.some((r) => pathname === r)) {
+        return aplicar(NextResponse.next(), cambios);
     }
 
     const haySesion = Boolean(acceso && sesion);

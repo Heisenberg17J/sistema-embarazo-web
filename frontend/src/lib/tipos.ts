@@ -2,7 +2,8 @@
 
 export type Rol = "GESTANTE" | "PROFESIONAL" | "ADMINISTRADOR";
 export type Severidad = "INFORMATIVA" | "ADVERTENCIA" | "CRITICA";
-export type EstadoAlerta = "PENDIENTE" | "REVISADA" | "DESCARTADA";
+/** ANULADA: el dato que la originó se corrigió o se eliminó. Se conserva, no se borra. */
+export type EstadoAlerta = "PENDIENTE" | "REVISADA" | "DESCARTADA" | "ANULADA";
 export type EstadoEmbarazo = "ACTIVO" | "FINALIZADO" | "CANCELADO";
 export type EstadoCita =
     | "PROGRAMADA"
@@ -88,6 +89,8 @@ export interface Alerta {
     fecha_revision: string | null;
     observacion_revision: string | null;
     accion_inmediata: boolean;
+    anulada_en?: string | null;
+    motivo_anulacion?: string | null;
     aviso?: string;
 }
 
@@ -117,7 +120,8 @@ export interface Medicion {
     semana_gestacion: number | null;
     origen: OrigenMedicion;
     control_id: number | null;
-    observaciones: string | null;
+    observaciones: string | null;    /** El servidor lo decide: quién lo registró y si sigue abierta la ventana para corregirlo. */
+    editable?: boolean;
 }
 
 export interface SerieMediciones {
@@ -159,7 +163,8 @@ export interface Sintoma {
     alerta_id?: number | null;
     alerta_severidad?: Severidad | null;
     alerta_estado?: EstadoAlerta | null;
-    alerta?: Alerta | null;
+    alerta?: Alerta | null;    /** El servidor lo decide: quién lo registró y si sigue abierta la ventana para corregirlo. */
+    editable?: boolean;
 }
 
 export interface Examen {
@@ -171,7 +176,8 @@ export interface Examen {
     resultado: string;
     observaciones: string | null;
     registrado_en: string;
-    profesional: string;
+    profesional: string;    /** El servidor lo decide: quién lo registró y si sigue abierta la ventana para corregirlo. */
+    editable?: boolean;
 }
 
 export interface Control {
@@ -184,7 +190,8 @@ export interface Control {
     creado_en: string;
     profesional: string;
     mediciones: { tipo: string; nombre: string; valor: number; unidad: string }[];
-    alertas?: Alerta[];
+    alertas?: Alerta[];    /** El servidor lo decide: quién lo registró y si sigue abierta la ventana para corregirlo. */
+    editable?: boolean;
 }
 
 export interface EventoHistorial {
@@ -195,6 +202,9 @@ export interface EventoHistorial {
     titulo: string;
     detalle: string | null;
     estado: string | null;
+    /** Solo en la actividad general del profesional: de quién es el registro. */
+    gestante?: string;
+    gestante_id?: number;
 }
 
 export interface Paciente {
@@ -246,6 +256,62 @@ export interface TipoSintoma {
     activo: boolean;
 }
 
+/** Elemento que un profesional debe avalar: una regla de alerta o un signo de alarma. */
+export interface ElementoRevision {
+    id: number;
+    codigo: string;
+    mensaje: string;
+    severidad: Severidad | null;
+    aprobada_en: string | null;
+    aprobada_por: string | null;
+}
+
+export interface ReglaRevision extends ElementoRevision {
+    medicion: string;
+    unidad: string;
+    operador: OperadorRegla;
+    valor_referencia: number | null;
+    valor_min: number | null;
+    valor_max: number | null;
+    semana_desde: number;
+    semana_hasta: number;
+    activa: boolean;
+}
+
+export interface SignoRevision extends Omit<ElementoRevision, "mensaje"> {
+    nombre: string;
+    mensaje_alarma: string;
+    alarma_hasta_semana: number | null;
+    activo: boolean;
+}
+
+export interface RevisionClinica {
+    reglas: ReglaRevision[];
+    signos: SignoRevision[];
+    /** Cuántos elementos siguen sin aprobación clínica. */
+    pendientes: number;
+}
+
+export type EstadoSolicitud = "PENDIENTE" | "ATENDIDA" | "RECHAZADA";
+
+/** Solicitud de supresión de datos, vista por la propia gestante. */
+export interface SolicitudPropia {
+    id: number;
+    estado: EstadoSolicitud;
+    motivo: string | null;
+    solicitada_en: string;
+    atendida_en: string | null;
+    respuesta: string | null;
+}
+
+/** Solicitud de supresión, vista por el administrador. */
+export interface SolicitudSupresion extends SolicitudPropia {
+    usuario_id: number;
+    persona: string;
+    correo: string;
+    anonimizado_en: string | null;
+}
+
 export interface TipoControl {
     id: number;
     codigo: string;
@@ -295,11 +361,25 @@ export interface PanelProfesional {
 export interface PanelGestante {
     rol: "GESTANTE";
     embarazo: Embarazo | null;
+    /** Quién la acompaña y cómo contactarle (sin el correo de acceso). */
+    profesionales: {
+        id: number;
+        nombre: string;
+        especialidad: string;
+        institucion: string | null;
+        telefono: string | null;
+    }[];
     mensaje?: string;
     proxima_cita: Pick<
         Cita,
         "id" | "fecha" | "hora" | "estado" | "profesional"
-    > & { tipo_control: string } | null;
+    > & {
+        tipo_control: string;
+        /** Días que faltan para la cita (0 = hoy). */
+        dias_para: number;
+        /** Verdadero si falta menos que el aviso configurado por el administrador. */
+        recordatorio: boolean;
+    } | null;
     alertas_pendientes: Pick<
         Alerta,
         "id" | "severidad" | "mensaje" | "generada_en" | "accion_inmediata"
@@ -357,6 +437,9 @@ export interface ReglaAlerta {
     activa: boolean;
     creada_por: number | null;
     creada_en: string;
+    /** Aprobación clínica: la retira la base de datos si se cambia lo aprobado. */
+    aprobada_por: number | null;
+    aprobada_en: string | null;
 }
 
 export interface ParametroSistema {

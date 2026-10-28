@@ -65,7 +65,7 @@ El vidrio translúcido y el gris claro son el riesgo de este diseño en una app 
 
 ### Formularios
 
-React 19 limpia los campos no controlados cuando termina una acción. Para que un error de validación no borre un formulario largo, las acciones devuelven en `valores` lo que la usuaria había escrito y los campos se repintan desde ahí. Las contraseñas nunca se devuelven.
+**Todo formulario con estado usa `useAccion` (`src/lib/usar-accion.ts`) y `<form onSubmit={enviar}>`. Nunca `useActionState` + `<form action>`.** React 19 restablece el formulario al terminar una acción, también si falló: un `<select>` vuelve en el DOM a su primera opción mientras el estado de React sigue diciendo otra cosa. Pasó de verdad: un administrador eligió "Rechazar la solicitud", falló la validación, el desplegable volvió solo a "Anonimizar" y el siguiente envío anonimizó una cuenta (irreversible). Con `useAccion` no hay reinicio: los campos —también las contraseñas— conservan lo escrito tras un error. Solo los formularios de un botón sin campos (cerrar sesión) pueden usar `action`. Toda acción destructiva nueva debe llevar una prueba que elija la opción peligrosa, provoque un error de validación y compruebe que no se ejecutó nada.
 
 ## Estructura
 
@@ -83,7 +83,7 @@ src/
     formularios/    diálogos de medición y síntoma
     admin/          formularios del administrador y diálogo de confirmación
   lib/              api, datos, sesión, formato, severidad, umbrales, marca
-e2e/                pruebas de extremo a extremo y generador de capturas
+e2e/                pruebas de extremo a extremo, accesibilidad (axe) y generador de capturas
 ```
 
 ## Estado de las pantallas
@@ -91,19 +91,22 @@ e2e/                pruebas de extremo a extremo y generador de capturas
 | Rol | Listas | Pendientes |
 |---|---|---|
 | Público | Login, registro de gestante, cambio de contraseña | — |
-| Gestante | **Completo**: panel, registrar embarazo, citas, evolución, síntomas, exámenes, historial, alertas, aprendizaje y su detalle, perfil, menú "Más", aviso de atención inmediata | — |
-| Profesional | **Completo**: panel, pacientes, ficha con pestañas, agenda, bandeja de alertas, registro de controles, exámenes y citas | — |
-| Administrador | **Completo**: estadísticas, usuarios y su ficha (crear, editar, desactivar, restablecer contraseña), asignaciones, contenido educativo, catálogos, reglas de alerta, auditoría y configuración | — |
+| Público | Login, registro con aceptación de la política, recuperar y restablecer contraseña, política de privacidad y términos | — |
+| Gestante | **Completo**: panel (con su profesional y el recordatorio de cita), mi embarazo (editar, finalizar, anteriores), citas, evolución, síntomas, controles, exámenes, historial, alertas, aprendizaje, perfil con privacidad (descargar datos, pedir supresión), corregir y eliminar sus registros | Contenido educativo real: hoy son dos entradas de muestra |
+| Profesional | **Completo**: panel, pacientes, ficha con pestañas (historial filtrable), actividad general, agenda, alertas, registro de controles, exámenes y citas, registrar embarazo de una paciente, corregir controles y exámenes, revisión clínica de reglas y signos | — |
+| Administrador | **Completo**: estadísticas, usuarios, asignaciones, contenido, catálogos, reglas de alerta, solicitudes de supresión, auditoría y configuración | — |
 
 El administrador solo ve cifras agregadas y datos de cuenta: ninguna pantalla suya muestra información clínica de una gestante (RNF-03).
 
-Los parámetros de **Configuración** se guardan y quedan en la auditoría, pero el backend todavía no los lee: cambiarlos no altera el comportamiento del sistema.
+Los parámetros de **Configuración** se validan contra su rango y el backend los lee (ver [`backend/README.md`](../backend/README.md#configuración-del-sistema)).
+
+**Accesibilidad y navegadores.** `e2e/accesibilidad.spec.ts` pasa axe-core (WCAG 2.1 A y AA) sobre las pantallas de los tres roles, en escritorio y móvil. La suite corre en Chrome (escritorio y Pixel 5), Firefox, Safari de escritorio (WebKit) y iPhone 13 (WebKit móvil). Para correr solo uno: `npx playwright test --project=escritorio`. WebKit en Linux necesita librerías del sistema (`sudo npx playwright install-deps`); en CI se instalan con `--with-deps`.
 
 ## Lo que conviene saber al tocar este código
 
 **Las acciones que muestran un resultado no llaman a `revalidatePath`.** Hacerlo desde dentro de una acción remonta el componente que la invocó y borra su estado: el aviso de atención inmediata y los mensajes de confirmación nunca llegaban a verse. En su lugar, el cliente pide `router.refresh()` cuando ya mostró el resultado (por ejemplo, al cerrar el diálogo). Las acciones de un solo paso que no tienen nada que mostrar (cancelar una cita, desactivar, finalizar, publicar, guardar un parámetro) sí llaman a `revalidatePath`: un `router.refresh()` lanzado en el mismo instante en que terminaba la acción a veces se perdía. Como el cliente de la API usa `no-store`, no hay caché de servidor que invalidar.
 
-**Los `<select>` de los formularios se controlan con estado.** React 19 restablece el formulario al terminar una acción: los `<input>` se repintan desde `valores`, pero un `<select>` no controlado vuelve a su opción inicial, así que tras un error se perdía lo elegido.
+**Los formularios no se restablecen** (ver *Formularios*): tras un error, todo lo escrito y lo elegido se conserva sin repintarlo desde `valores`.
 
 **Los filtros llevan un valor explícito en la URL** (`?tipo=todos` en lugar de quitar el parámetro). Un enlace a la ruta desnuda, estando ya en esa ruta con parámetros, no navegaba a la primera pulsación.
 
