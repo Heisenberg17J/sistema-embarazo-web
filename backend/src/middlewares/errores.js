@@ -1,4 +1,5 @@
 const { HttpError } = require('../utils/http');
+const registro = require('../services/registro');
 
 // Mensajes legibles para las restricciones que el usuario puede provocar.
 const MENSAJES_RESTRICCION = {
@@ -15,6 +16,7 @@ const MENSAJES_RESTRICCION = {
     uq_tipo_sintoma_codigo: 'Ya existe un tipo de síntoma con ese código',
     uq_tipo_medicion_codigo: 'Ya existe un tipo de medición con ese código',
     uq_regla_codigo: 'Ya existe una regla con ese código',
+    uq_supresion_pendiente: 'Ya tienes una solicitud de supresión pendiente',
     ck_embarazo_inicio: 'La fecha de inicio (FUM) no puede ser futura',
     ck_embarazo_fpp: 'La fecha probable de parto debe ser posterior a la FUM y no superar 320 días',
     ck_embarazo_fin: 'La fecha de finalización no es coherente con el estado del embarazo',
@@ -59,8 +61,13 @@ const manejadorErrores = (error, req, res, next) => {
         case '42501':
             return res.status(403).json({ error: 'Operación no permitida' });
         default:
-            console.error(error);
-            return res.status(500).json({ error: 'Error interno del servidor' });
+            // El detalle va al registro del servidor, con el identificador de la petición; a quien
+            // lo sufre solo se le da el identificador, para que lo pueda reportar.
+            registro.error('error no controlado', {
+                id: req.id, metodo: req.method, ruta: req.originalUrl?.split('?')[0],
+                codigo: error.code, error: error.message, pila: error.stack
+            });
+            return res.status(500).json({ error: 'Error interno del servidor', id: req.id });
     }
 };
 

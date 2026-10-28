@@ -33,7 +33,8 @@ const nuevaGestante = async (extra = {}) => {
     const u = unico();
     const datos = {
         nombre: 'Prueba', apellido: `Gestante ${u}`, correo: `g${u}@prueba.co`, contrasena: 'Clave1234',
-        numero_documento: `D${u}`.slice(0, 20), fecha_nacimiento: '1995-03-10', ...extra
+        numero_documento: `D${u}`.slice(0, 20), fecha_nacimiento: '1995-03-10',
+        acepto_politica: true, version_politica: '1.0', ...extra
     };
     const res = await api().post('/api/v1/auth/registro').send(datos);
     if (res.status !== 201) throw new Error(`Registro falló: ${JSON.stringify(res.body)}`);

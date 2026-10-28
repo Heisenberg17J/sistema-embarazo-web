@@ -36,6 +36,10 @@ Todo cambio nuevo va en un archivo `00N_descripcion.sql`; nunca se editan las mi
 - Trigger `tg_auditoria_inmutable`: la auditoría es de solo inserción; bloquea UPDATE y DELETE (salvo el `SET NULL` de la FK de usuario) (RNF-14).
 - `ck_embarazo_talla`, `ck_embarazo_peso` y `ck_gestante_grupo`: rangos de talla, peso pregestacional y grupo sanguíneo válidos.
 
+## Alertas anuladas y datos corregidos
+
+Una alerta nace de un dato; si ese dato se corrige o se elimina, la alerta **no se borra**: queda `ANULADA`, desvinculada del dato (`medicion_id`, `sintoma_id` y `control_id` en NULL) y con quién la anuló y por qué. `ck_alerta_origen` admite el origen en NULL solo en ese estado. Así la gráfica deja de mostrar un valor que era un error de digitación y la historia conserva el rastro de que hubo un aviso. La copia del valor anterior queda en `auditoria`.
+
 ## Funciones y vistas
 
 - `fn_semana_gestacion(fecha_inicio, fecha)`: semana calculada, nunca almacenada como dato maestro (RF-04).
@@ -50,5 +54,10 @@ Todo cambio nuevo va en un archivo `00N_descripcion.sql`; nunca se editan las mi
 - `migrations/001_esquema.sql`: creación completa (tipos, tablas, restricciones, índices, triggers, vistas y catálogos iniciales).
 - `migrations/002_signos_alarma.sql`: signos de alarma, alertas desde síntomas, reglas clínicas base, datos antropométricos, contacto de emergencia y auditoría inmutable.
 - `migrations/003_tuteo.sql`: reescribe de "usted" a "tú" los mensajes que lee la gestante (signos de alarma y reglas de alerta), para que la app no mezcle los dos tratamientos. Solo cambia la redacción.
+- `migrations/004_privacidad_y_recuperacion.sql`: aceptación de la política (versión y fecha), solicitudes de supresión, aprobación clínica de reglas y signos (con triggers que la retiran si cambia lo aprobado) y enlaces de recuperación de contraseña (solo se guarda el hash).
+- `migrations/005_estado_alerta_anulada.sql`: añade el estado `ANULADA`. Va aparte porque un valor nuevo de un enum no se puede usar en la misma transacción que lo crea.
+- `migrations/006_correccion_datos.sql`: corregir o eliminar un dato clínico **anula** sus alertas en lugar de borrarlas (`anulada_en`, `anulada_por`, `motivo_anulacion`; las claves a medición, síntoma y control pasan a `ON DELETE SET NULL`).
+- `migrations/007_configuracion_real.sql`: quita de `configuracion_sistema` los parámetros que el código nunca leía (`sesion_horas_vigencia`, `backup_frecuencia_horas`).
+- `respaldo.sh` y `restaurar.sh`: volcado y restauración (ver [`DESPLIEGUE.md`](../DESPLIEGUE.md)).
 - `seeds.sql`: datos de ejemplo opcionales (usuarios, embarazo, mediciones de varias semanas, alertas).
 - Para levantar PostgreSQL localmente, ver `docker-compose.yml` en la raíz.

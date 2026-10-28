@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BellRing, CalendarClock, CalendarPlus } from "lucide-react";
+import { BellRing, CalendarClock, CalendarPlus, ChevronRight, Stethoscope } from "lucide-react";
 import { DialogoControl } from "@/components/formularios/dialogo-control";
 import { Saludo } from "@/components/layout/saludo";
 import { AlertaItem } from "@/components/paneles/alerta-item";
@@ -8,7 +8,7 @@ import { Boton } from "@/components/ui/boton";
 import { Insignia } from "@/components/ui/insignia";
 import { EncabezadoTarjeta, Panel, Tarjeta } from "@/components/ui/tarjeta";
 import { Vacio } from "@/components/ui/vacio";
-import { panel, tiposMedicion } from "@/lib/datos";
+import { panel, revisionClinica, tiposMedicion } from "@/lib/datos";
 import { ESTADO_CITA_TEXTO } from "@/lib/formato";
 import { exigirRol } from "@/lib/sesion-servidor";
 import type { PanelProfesional } from "@/lib/tipos";
@@ -18,9 +18,10 @@ export const metadata: Metadata = { title: "Panel" };
 
 export default async function PaginaPanelProfesional() {
     const sesion = await exigirRol("PROFESIONAL");
-    const [datos, catalogoMedicion] = await Promise.all([
+    const [datos, catalogoMedicion, revision] = await Promise.all([
         panel<PanelProfesional>(),
         tiposMedicion(),
+        revisionClinica(),
     ]);
 
     const { resumen } = datos;
@@ -39,6 +40,24 @@ export default async function PaginaPanelProfesional() {
             />
 
             <div className="space-y-5">
+                {/* Lo que el sistema le dice a las gestantes necesita el aval de un
+                    profesional: mientras falte, se lo recordamos aquí. */}
+                {revision.pendientes > 0 && (
+                    <Link href="/pro/revision-clinica" className="block">
+                        <Tarjeta className="border-l-4 border-l-advertencia-borde transition-colors hover:bg-surface-strong">
+                            <div className="flex items-center gap-3">
+                                <Stethoscope className="size-6 shrink-0 text-advertencia" aria-hidden />
+                                <p className="flex-1 text-sm leading-relaxed">
+                                    <strong>{revision.pendientes}</strong> reglas de alerta y signos de
+                                    alarma esperan tu revisión: es lo que el sistema les dice a las
+                                    gestantes y debe estar avalado por un profesional.
+                                </p>
+                                <ChevronRight className="size-4 text-muted-foreground" aria-hidden />
+                            </div>
+                        </Tarjeta>
+                    </Link>
+                )}
+
                 {/* --- Resumen de la consulta ------------------------------- */}
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <Dato

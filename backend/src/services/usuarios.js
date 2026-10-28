@@ -6,7 +6,8 @@ const hashContrasena = (contrasena) => bcrypt.hash(contrasena, env.bcryptCosto);
 const verificarContrasena = (contrasena, hash) => bcrypt.compare(contrasena, hash);
 
 const COLUMNAS_USUARIO = `u.id, r.codigo AS rol, u.nombre, u.apellido, u.correo, u.activo,
-    u.debe_cambiar_contrasena, u.ultimo_acceso, u.creado_en, u.actualizado_en`;
+    u.debe_cambiar_contrasena, u.ultimo_acceso, u.creado_en, u.actualizado_en,
+    u.acepto_politica_en, u.version_politica`;
 
 const CAMPOS_PERFIL_GESTANTE = ['tipo_documento', 'numero_documento', 'fecha_nacimiento', 'telefono', 'direccion',
     'eps', 'grupo_sanguineo', 'contacto_emergencia_nombre', 'contacto_emergencia_telefono'];
@@ -33,12 +34,15 @@ const obtenerUsuarioCompleto = async (db, id) => {
 };
 
 // Crea usuario y, si aplica, su perfil. Debe llamarse dentro de una transacción.
-const crearUsuario = async (db, { rol, nombre, apellido, correo, contrasena, debeCambiar = false, perfil }) => {
+// `versionPolitica`: versión de la política que la persona aceptó al registrarse (solo gestantes).
+const crearUsuario = async (db, { rol, nombre, apellido, correo, contrasena, debeCambiar = false, perfil, versionPolitica = null }) => {
     const hash = await hashContrasena(contrasena);
     const { rows } = await db.query(
-        `INSERT INTO usuario (rol_id, nombre, apellido, correo, hash_contrasena, debe_cambiar_contrasena)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-        [ROL_ID[rol], nombre, apellido, correo, hash, debeCambiar]
+        `INSERT INTO usuario (rol_id, nombre, apellido, correo, hash_contrasena, debe_cambiar_contrasena,
+                              acepto_politica_en, version_politica)
+         VALUES ($1, $2, $3, $4, $5, $6, CASE WHEN $7::text IS NULL THEN NULL ELSE now() END, $7)
+         RETURNING id`,
+        [ROL_ID[rol], nombre, apellido, correo, hash, debeCambiar, versionPolitica]
     );
     const id = rows[0].id;
     if (rol === 'GESTANTE') await insertarPerfil(db, 'perfil_gestante', id, perfil, CAMPOS_PERFIL_GESTANTE);

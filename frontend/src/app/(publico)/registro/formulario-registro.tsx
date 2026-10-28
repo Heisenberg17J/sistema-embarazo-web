@@ -1,10 +1,13 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import Link from "next/link";
+import { useState } from "react";
 import { UserPlus } from "lucide-react";
 import { registrarGestante, type EstadoFormulario } from "@/acciones/auth";
 import { Boton } from "@/components/ui/boton";
 import { AvisoError, Campo } from "@/components/ui/campo";
+import { hoyLocal } from "@/lib/formato";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: EstadoFormulario = {};
 
@@ -39,7 +42,7 @@ function Seccion({
 }
 
 export function FormularioRegistro() {
-    const [estado, enviar, enviando] = useActionState(registrarGestante, INICIAL);
+    const [estado, enviar, enviando] = useAccion(registrarGestante, INICIAL);
     const e = estado?.porCampo ?? {};
     // React 19 limpia los campos al terminar la acción: se repintan desde el
     // estado para que un error de validación no borre el formulario entero.
@@ -48,9 +51,12 @@ export function FormularioRegistro() {
     // conservan la opción elegida cuando React restablece el formulario.
     const [documento, setDocumento] = useState("CC");
     const [grupo, setGrupo] = useState("");
+    // Controlada por la misma razón que los <select>: React restablece el
+    // formulario al terminar la acción y una casilla no controlada se desmarcaría.
+    const [acepto, setAcepto] = useState(false);
 
     return (
-        <form action={enviar} className="mt-5 space-y-7" noValidate>
+        <form onSubmit={enviar} className="mt-5 space-y-7" noValidate>
             <AvisoError>{estado?.error}</AvisoError>
 
             <Seccion titulo="Tus datos">
@@ -125,7 +131,7 @@ export function FormularioRegistro() {
                             name="fecha_nacimiento"
                             type="date"
                             autoComplete="bday"
-                            max={new Date().toISOString().slice(0, 10)}
+                            max={hoyLocal()}
                             defaultValue={v.fecha_nacimiento}
                             required
                         />
@@ -253,6 +259,51 @@ export function FormularioRegistro() {
                     </Campo>
                 </div>
             </Seccion>
+
+            <div className="space-y-2">
+                <label className="flex cursor-pointer items-start gap-3 rounded-2xl glass-soft p-4">
+                    <input
+                        type="checkbox"
+                        name="acepto_politica"
+                        checked={acepto}
+                        onChange={(ev) => setAcepto(ev.target.checked)}
+                        aria-invalid={Boolean(e.acepto_politica)}
+                        aria-describedby={e.acepto_politica ? "error-politica" : undefined}
+                        className="mt-0.5 size-5 shrink-0 accent-primary"
+                    />
+                    <span className="text-sm leading-relaxed">
+                        Autorizo el tratamiento de mis datos personales, incluidos mis
+                        datos de salud, para el seguimiento de mi embarazo, según la{" "}
+                        <Link
+                            href="/politica-de-privacidad"
+                            target="_blank"
+                            rel="noopener"
+                            className="font-semibold text-brand-deep underline underline-offset-4"
+                        >
+                            política de tratamiento de datos
+                        </Link>{" "}
+                        y los{" "}
+                        <Link
+                            href="/terminos"
+                            target="_blank"
+                            rel="noopener"
+                            className="font-semibold text-brand-deep underline underline-offset-4"
+                        >
+                            términos de uso
+                        </Link>
+                        . Sé que los datos de salud son sensibles y que no estoy
+                        obligada a autorizarlos.
+                    </span>
+                </label>
+                {e.acepto_politica && (
+                    <p
+                        id="error-politica"
+                        className="flex items-start gap-1.5 text-xs font-medium text-critica"
+                    >
+                        {e.acepto_politica}
+                    </p>
+                )}
+            </div>
 
             <Boton type="submit" ancho="completo" tamano="lg" disabled={enviando}>
                 <UserPlus aria-hidden />

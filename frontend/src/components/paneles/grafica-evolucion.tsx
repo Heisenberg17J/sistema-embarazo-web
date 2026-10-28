@@ -80,7 +80,10 @@ export function GraficaEvolucion({
                 mismo dato en texto. */}
             <div aria-hidden style={{ height: alto }} className="mt-5 w-full">
                 <ResponsiveContainer width="100%" height="100%">
+                    {/* Recharts 3 hace enfocable la gráfica (accessibilityLayer); aquí va dentro de un
+                        contenedor aria-hidden, y un elemento oculto no puede recibir el foco. */}
                     <LineChart
+                        accessibilityLayer={false}
                         data={datos}
                         margin={{ top: 8, right: 12, bottom: 4, left: -12 }}
                     >

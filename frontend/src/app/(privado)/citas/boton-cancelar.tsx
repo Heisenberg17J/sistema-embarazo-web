@@ -1,11 +1,12 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { CalendarX } from "lucide-react";
 import { cancelarCita, type EstadoCancelacion } from "@/acciones/citas";
 import { Boton } from "@/components/ui/boton";
 import { AvisoError, Campo } from "@/components/ui/campo";
 import { Dialogo } from "@/components/ui/dialogo";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: EstadoCancelacion = {};
 
@@ -59,7 +60,7 @@ function Formulario({
     onExito: () => void;
     onCerrar: () => void;
 }) {
-    const [estado, enviar, enviando] = useActionState(cancelarCita, INICIAL);
+    const [estado, enviar, enviando] = useAccion(cancelarCita, INICIAL);
 
     useEffect(() => {
         if (estado.ok) onExito();
@@ -67,7 +68,7 @@ function Formulario({
     }, [estado]);
 
     return (
-        <form action={enviar} className="space-y-4" noValidate>
+        <form onSubmit={enviar} className="space-y-4" noValidate>
             <input type="hidden" name="cita_id" value={citaId} />
             <AvisoError>{estado.error}</AvisoError>
 

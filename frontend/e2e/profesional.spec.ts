@@ -172,4 +172,90 @@ test.describe("Pantallas del profesional", () => {
         await expect(contenido(page).getByText("Ecografía").first()).toBeVisible();
         await expect(contenido(page).getByText("15:45")).toBeVisible();
     });
+
+    test("el profesional revisa y aprueba lo que el sistema les dice a las gestantes", async ({ page }) => {
+        // El panel avisa de lo que falta: nadie ha avalado todavía los umbrales.
+        const aviso = contenido(page).getByRole("link", { name: /esperan tu revisión/ });
+        await expect(aviso).toBeVisible();
+        await aviso.click();
+        await expect(page).toHaveURL(/\/pro\/revision-clinica$/);
+
+        const regla = contenido(page)
+            .getByRole("listitem")
+            .filter({ hasText: "Presión sistólica de 160 o más" });
+        await expect(regla).toContainText("Sin aprobar");
+
+        // Aprobar deja constancia de quién avala el mensaje, y lo dice antes de confirmar.
+        await regla.getByRole("button", { name: "Aprobar" }).click();
+        const hoja = page.getByRole("dialog");
+        await expect(hoja).toContainText("avalas");
+        await expect(hoja).toContainText("acude de inmediato");
+        await hoja.getByRole("button", { name: "Sí, lo apruebo" }).click();
+
+        await expect(hoja).toBeHidden();
+        await expect(regla).toContainText("Aprobada por Carlos Mejía");
+        await expect(regla.getByRole("button", { name: "Aprobar" })).toBeHidden();
+    });
+
+    test("el administrador ve qué reglas siguen sin aprobación clínica", async ({ page }) => {
+        await salir(page);
+        await entrar(page, USUARIOS.admin);
+
+        await expect(contenido(page)).toContainText("sin aprobación de un profesional de salud");
+        await page.goto("/admin/reglas-alerta");
+        await expect(contenido(page).getByText("Sin aprobación clínica").first()).toBeVisible();
+    });
+
+    test("cerrar una cita como cancelada sin motivo falla y no la deja cumplida por error", async ({ page }) => {
+        // Regresión del mismo fallo que anonimizó una cuenta por error: tras un envío que falla,
+        // un desplegable no puede volver solo a su opción inicial ("cumplida").
+        await page.goto("/pro/agenda");
+        const cita = contenido(page).getByRole("listitem").filter({ hasText: "Programada" }).first();
+        await cita.getByRole("button", { name: "Cerrar" }).click();
+
+        const hoja = page.getByRole("dialog");
+        await hoja.getByLabel("¿Qué pasó con la cita?").selectOption("CANCELADA");
+        await hoja.getByRole("button", { name: "Guardar" }).click();
+        await expect(hoja.getByText("Indica por qué se cancela")).toBeVisible();
+        await expect(hoja.getByLabel("¿Qué pasó con la cita?")).toHaveValue("CANCELADA");
+
+        await hoja.getByLabel("Motivo").fill("La paciente avisó que no puede venir");
+        await hoja.getByRole("button", { name: "Guardar" }).click();
+        await expect(hoja).toBeHidden();
+
+        await expect(contenido(page).getByText("La paciente avisó que no puede venir")).toBeVisible();
+    });
+
+    test("el historial de la ficha se filtra por tipo", async ({ page }) => {
+        await page.goto(`/pro/pacientes/${MARIA}?seccion=historial`);
+        const filtros = contenido(page).getByRole("group", { name: "Tipo de registro" });
+        await filtros.getByRole("link", { name: "Exámenes" }).click();
+        await expect(page).toHaveURL(/tipo=EXAMEN/);
+        await expect(contenido(page).getByText("Hemograma completo")).toBeVisible();
+        await expect(contenido(page).getByText("Dolor de cabeza persistente")).toHaveCount(0);
+
+        // Se mantiene la sección y se puede volver a ver todo.
+        await expect(page).toHaveURL(/seccion=historial/);
+        await filtros.getByRole("link", { name: "Todo" }).click();
+        await expect(contenido(page).getByText("Dolor de cabeza persistente")).toBeVisible();
+    });
+
+    test("la actividad reúne lo registrado en todas las pacientes", async ({ page }) => {
+        await page.goto("/mas");
+        await contenido(page).getByRole("link", { name: "Actividad" }).click();
+        await expect(page).toHaveURL(/\/pro\/actividad$/);
+        await expect(page.getByRole("heading", { name: "Actividad" })).toBeVisible();
+
+        // Cada registro dice de quién es y lleva a su ficha.
+        const enlace = contenido(page).getByRole("link", { name: /María/ }).first();
+        await expect(enlace).toBeVisible();
+
+        const filtros = contenido(page).getByRole("group", { name: "Tipo de registro" });
+        await filtros.getByRole("link", { name: "Exámenes" }).click();
+        await expect(page).toHaveURL(/tipo=EXAMEN/);
+        await expect(contenido(page).getByText("Hemograma completo")).toBeVisible();
+
+        await contenido(page).getByRole("link", { name: /María/ }).first().click();
+        await expect(page).toHaveURL(new RegExp(`/pro/pacientes/${MARIA}\\?seccion=examenes`));
+    });
 });

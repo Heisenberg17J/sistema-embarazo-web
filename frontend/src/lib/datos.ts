@@ -14,6 +14,9 @@ import type {
     Sintoma,
     TipoMedicion,
     TipoSintoma,
+    RevisionClinica,
+    SolicitudPropia,
+    SolicitudSupresion,
     TipoControl,
     TipoExamen,
     Paciente,
@@ -76,6 +79,11 @@ export const historial = cache(
         api.get<Pagina<EventoHistorial>>(
             `/embarazos/${id}/historial${consulta(params)}`,
         ),
+);
+
+export const actividad = cache(
+    (params: Record<string, unknown> = {}) =>
+        api.get<Pagina<EventoHistorial>>(`/pacientes/actividad${consulta(params)}`),
 );
 
 export const citasDeEmbarazo = cache(
@@ -178,3 +186,22 @@ export const configuracion = cache(() =>
 export const auditoria = cache((params: Record<string, unknown> = {}) =>
     api.get<Pagina<RegistroAuditoria>>(`/admin/auditoria${consulta(params)}`),
 );
+
+// --- Derechos del titular de los datos (Ley 1581) ---------------------------
+
+/** Última solicitud de supresión de la gestante autenticada, o null. */
+export const solicitudSupresionPropia = cache(() =>
+    api.get<SolicitudPropia | null>("/auth/solicitud-supresion"),
+);
+
+export const solicitudesSupresion = cache((params: Record<string, unknown> = {}) =>
+    api.get<Pagina<SolicitudSupresion>>(`/admin/solicitudes-supresion${consulta(params)}`),
+);
+
+/** Reglas de alerta y signos de alarma, con su estado de aprobación clínica. */
+export const revisionClinica = cache(() =>
+    api.get<RevisionClinica>("/catalogos/revision-clinica"),
+);
+
+/** Todos los embarazos de la gestante autenticada, el actual y los anteriores. */
+export const embarazosPropios = cache(() => api.get<Embarazo[]>("/embarazos"));

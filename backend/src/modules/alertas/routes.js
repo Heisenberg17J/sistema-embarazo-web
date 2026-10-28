@@ -7,7 +7,7 @@ const { manejar } = require('../../utils/http');
 const { z, idParam, textoOpcional, paginacion } = require('../../utils/esquemas');
 
 const esquemaFiltro = paginacion.extend({
-    estado: z.enum(['PENDIENTE', 'REVISADA', 'DESCARTADA']).optional(),
+    estado: z.enum(['PENDIENTE', 'REVISADA', 'DESCARTADA', 'ANULADA']).optional(),
     severidad: z.enum(['INFORMATIVA', 'ADVERTENCIA', 'CRITICA']).optional()
 });
 

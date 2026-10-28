@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Pencil, Plus, Save } from "lucide-react";
 import { guardarCatalogo, type ResultadoAdmin, type RutaCatalogo } from "@/acciones/admin";
 import { DialogoAccion } from "@/components/formularios/dialogo-accion";
@@ -9,6 +9,7 @@ import { AvisoExito } from "@/components/ui/aviso-exito";
 import { AvisoError, Campo } from "@/components/ui/campo";
 import { SEVERIDAD_TEXTO } from "@/lib/formato";
 import type { TipoControl, TipoExamen, TipoMedicion, TipoSintoma } from "@/lib/tipos";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: ResultadoAdmin = {};
 
@@ -63,7 +64,7 @@ function Formulario({
     registro?: RegistroCatalogo;
     onExito: () => void;
 }) {
-    const [estado, enviar, enviando] = useActionState(guardarCatalogo, INICIAL);
+    const [estado, enviar, enviando] = useAccion(guardarCatalogo, INICIAL);
     const e = estado.porCampo ?? {};
     const v = estado.valores ?? {};
     const r = (registro ?? {}) as Partial<TipoControl & TipoExamen & TipoSintoma & TipoMedicion>;
@@ -85,7 +86,7 @@ function Formulario({
     if (estado.ok) return <AvisoExito>{estado.resumen}</AvisoExito>;
 
     return (
-        <form action={enviar} className="space-y-4" noValidate>
+        <form onSubmit={enviar} className="space-y-4" noValidate>
             <input type="hidden" name="catalogo" value={catalogo} />
             {registro && <input type="hidden" name="registro_id" value={registro.id} />}
             <AvisoError>{estado.error}</AvisoError>

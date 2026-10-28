@@ -15,8 +15,18 @@ fi
 echo "→ Base de datos"
 docker compose --env-file backend/.env up -d
 
-#echo "→ Esperando a PostgreSQL"
-#ntil docker compose exec -T db pg_isready -U postgres >/dev/null 2>&1; do sleep 1; done
+# Sin esta espera, las migraciones corren antes de que la base acepte
+# conexiones y fallan en el primer arranque.
+echo "→ Esperando a PostgreSQL"
+intentos=0
+until docker compose --env-file backend/.env exec -T db pg_isready -U postgres >/dev/null 2>&1; do
+    intentos=$((intentos + 1))
+    if [ "$intentos" -ge 60 ]; then
+        echo "PostgreSQL no respondió en 60 segundos." >&2
+        exit 1
+    fi
+    sleep 1
+done
 
 echo "→ Migraciones"
 (cd backend && npm run migrate)

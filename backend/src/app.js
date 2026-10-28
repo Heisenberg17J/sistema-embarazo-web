@@ -4,11 +4,14 @@ const helmet = require('helmet');
 const env = require('./config/env');
 const { pool } = require('./config/db');
 const { manejadorErrores, rutaNoEncontrada } = require('./middlewares/errores');
+const { registrarSolicitudes } = require('./middlewares/solicitudes');
+const { limiteGeneral } = require('./middlewares/limites');
 
 const app = express();
 
 if (env.trustProxy) app.set('trust proxy', 1);
 app.disable('x-powered-by');
+app.use(registrarSolicitudes);
 app.use(helmet());
 app.use(cors({ origin: env.corsOrigen }));
 app.use(express.json({ limit: '100kb' }));
@@ -24,6 +27,7 @@ app.get('/api/v1/salud', async (req, res) => {
 });
 
 const api = express.Router();
+api.use(limiteGeneral);
 api.use('/auth', require('./modules/auth/routes'));
 api.use('/usuarios', require('./modules/usuarios/routes'));
 api.use('/asignaciones', require('./modules/asignaciones/routes'));

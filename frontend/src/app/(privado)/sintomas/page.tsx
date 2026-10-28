@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Activity, TriangleAlert } from "lucide-react";
 import { Saludo } from "@/components/layout/saludo";
+import { eliminarSintoma } from "@/acciones/correcciones";
+import { DialogoCorregirSintoma } from "@/components/formularios/dialogo-corregir-sintoma";
+import { DialogoEliminar } from "@/components/formularios/dialogo-eliminar";
 import { DialogoSintoma } from "@/components/formularios/dialogo-sintoma";
 import { SinEmbarazo } from "@/components/paneles/sin-embarazo";
 import { Insignia } from "@/components/ui/insignia";
@@ -120,6 +123,31 @@ export default async function PaginaSintomas({
                                         <p className="mt-2 text-xs font-medium text-exito">
                                             Tu profesional ya revisó esta alerta.
                                         </p>
+                                    )}
+
+                                    {/* Solo si la ventana de corrección sigue abierta: lo decide el servidor. */}
+                                    {sintoma.editable && (
+                                        <div className="mt-3 flex flex-wrap items-center justify-end gap-1 border-t border-border-firme pt-2">
+                                            <span className="mr-auto text-[11px] text-muted-foreground">
+                                                ¿Te equivocaste? Puedes corregirlo durante las 24 horas siguientes a haberlo guardado.
+                                            </span>
+                                            <DialogoCorregirSintoma
+                                                embarazoId={embarazo.embarazo_id}
+                                                sintoma={sintoma}
+                                                tipos={catalogo}
+                                                contactoNombre={perfil?.contacto_emergencia_nombre}
+                                                contactoTelefono={perfil?.contacto_emergencia_telefono}
+                                            />
+                                            <DialogoEliminar
+                                                titulo="Eliminar este síntoma"
+                                                descripcion={sintoma.descripcion}
+                                                accion={eliminarSintoma}
+                                                embarazoId={embarazo.embarazo_id}
+                                                elementoId={sintoma.id}
+                                            >
+                                                <p>Dejará de aparecer en tu historial.</p>
+                                            </DialogoEliminar>
+                                        </div>
                                     )}
                                 </li>
                             );

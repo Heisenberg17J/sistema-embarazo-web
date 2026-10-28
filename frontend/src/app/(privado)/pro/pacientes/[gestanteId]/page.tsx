@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Baby, Mail, Phone, PhoneCall } from "lucide-react";
 import { DialogoControl } from "@/components/formularios/dialogo-control";
+import { DialogoEditarEmbarazo, DialogoFinalizarEmbarazo, DialogoRegistrarEmbarazoPaciente } from "@/components/formularios/dialogo-embarazo";
 import { DialogoExamen } from "@/components/formularios/dialogo-examen";
 import { DialogoNuevaCita } from "@/components/formularios/dialogo-cita";
 import { AnilloGestacion } from "@/components/paneles/anillo-gestacion";
@@ -91,6 +92,13 @@ export default async function PaginaFicha({
                     </p>
                 </div>
 
+                {/* Sin embarazo en curso: nunca registró uno, o el último ya se cerró. */}
+                {!activo && (
+                    <div className="flex flex-wrap gap-2">
+                        <DialogoRegistrarEmbarazoPaciente gestanteId={numero} gestante={nombre} />
+                    </div>
+                )}
+
                 {activo && embarazo && (
                     <div className="flex flex-wrap gap-2">
                         <DialogoControl
@@ -109,6 +117,8 @@ export default async function PaginaFicha({
                             gestante={nombre}
                             textoBoton="Citar"
                         />
+                        <DialogoEditarEmbarazo embarazo={embarazo} texto="Editar embarazo" />
+                        <DialogoFinalizarEmbarazo embarazoId={embarazo.embarazo_id} texto="Cerrar embarazo" />
                     </div>
                 )}
             </div>

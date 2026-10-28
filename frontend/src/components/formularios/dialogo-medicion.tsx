@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { HeartPulse, Plus, Save } from "lucide-react";
 import { registrarMedicion, type ResultadoRegistro } from "@/acciones/registros";
 import { CODIGOS_PRESION, TIPO_PRESION } from "@/lib/constantes";
@@ -11,6 +11,7 @@ import { AvisoExito } from "@/components/ui/aviso-exito";
 import { AvisoError, Campo } from "@/components/ui/campo";
 import { Dialogo } from "@/components/ui/dialogo";
 import type { Alerta, TipoMedicion } from "@/lib/tipos";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: ResultadoRegistro = {};
 
@@ -88,7 +89,7 @@ function Formulario({
     onCritica: (alertas: Alerta[]) => void;
     onGuardado: () => void;
 }) {
-    const [estado, enviar, enviando] = useActionState(registrarMedicion, INICIAL);
+    const [estado, enviar, enviando] = useAccion(registrarMedicion, INICIAL);
     const [tipo, setTipo] = useState(TIPO_PRESION);
     const e = estado.porCampo ?? {};
 
@@ -111,7 +112,7 @@ function Formulario({
     const avisos = estado.alertas?.filter((a) => !a.accion_inmediata) ?? [];
 
     return (
-        <form action={enviar} className="space-y-4" noValidate>
+        <form onSubmit={enviar} className="space-y-4" noValidate>
             <AvisoError>{estado.error}</AvisoError>
             {estado.ok && <AvisoExito>{estado.resumen}</AvisoExito>}
 

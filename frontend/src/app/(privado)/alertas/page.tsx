@@ -17,6 +17,7 @@ const ESTADOS = [
     { valor: "PENDIENTE", texto: "Sin revisar" },
     { valor: "REVISADA", texto: "Revisadas" },
     { valor: "DESCARTADA", texto: "Descartadas" },
+    { valor: "ANULADA", texto: "Anuladas" },
 ];
 
 type Params = Record<string, string | string[] | undefined>;
@@ -109,12 +110,14 @@ async function Lista({
                             mensaje={alerta.mensaje}
                             generadaEn={alerta.generada_en}
                             estado={ESTADO_ALERTA_TEXTO[alerta.estado]}
+                            anulada={alerta.estado === "ANULADA"}
                             detalle={
                                 [
                                     alerta.valor_detectado != null &&
                                         `Valor registrado: ${alerta.valor_detectado}${alerta.unidad ? ` ${alerta.unidad}` : ""}.`,
                                     alerta.revisor && `Revisada por ${alerta.revisor}.`,
                                     alerta.observacion_revision,
+                                    alerta.motivo_anulacion,
                                 ]
                                     .filter(Boolean)
                                     .join(" ") || null

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Save, TriangleAlert } from "lucide-react";
 import { registrarSintoma, type ResultadoRegistro } from "@/acciones/registros";
 import { AvisoCritico } from "@/components/paneles/aviso-critico";
@@ -10,6 +10,7 @@ import { AvisoExito } from "@/components/ui/aviso-exito";
 import { AvisoError, Campo } from "@/components/ui/campo";
 import { Dialogo } from "@/components/ui/dialogo";
 import type { Alerta, TipoSintoma } from "@/lib/tipos";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: ResultadoRegistro = {};
 const OTRO = "__OTRO__";
@@ -96,7 +97,7 @@ function Formulario({
     onCritica: (alertas: Alerta[]) => void;
     onGuardado: () => void;
 }) {
-    const [estado, enviar, enviando] = useActionState(registrarSintoma, INICIAL);
+    const [estado, enviar, enviando] = useAccion(registrarSintoma, INICIAL);
     const [tipo, setTipo] = useState("");
     const e = estado.porCampo ?? {};
 
@@ -117,7 +118,7 @@ function Formulario({
     const avisos = estado.alertas?.filter((a) => !a.accion_inmediata) ?? [];
 
     return (
-        <form action={enviar} className="space-y-4" noValidate>
+        <form onSubmit={enviar} className="space-y-4" noValidate>
             <AvisoError>{estado.error}</AvisoError>
             {estado.ok && <AvisoExito>{estado.resumen}</AvisoExito>}
 

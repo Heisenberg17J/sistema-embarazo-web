@@ -7,9 +7,14 @@ import {
     History,
     TrendingUp,
 } from "lucide-react";
+import { eliminarControl, eliminarExamen } from "@/acciones/correcciones";
+import { DialogoCorregirControl } from "@/components/formularios/dialogo-corregir-control";
+import { DialogoCorregirExamen } from "@/components/formularios/dialogo-corregir-examen";
+import { DialogoEliminar } from "@/components/formularios/dialogo-eliminar";
 import { AlertaItem } from "@/components/paneles/alerta-item";
 import { GraficaEvolucion } from "@/components/paneles/grafica-evolucion";
 import { LineaTiempo } from "@/components/paneles/linea-tiempo";
+import { Filtros, filtroValido } from "@/components/ui/filtros";
 import { Insignia } from "@/components/ui/insignia";
 import { Paginacion } from "@/components/ui/paginacion";
 import { Panel } from "@/components/ui/tarjeta";
@@ -75,20 +80,46 @@ export async function Seccion({
     }
 }
 
+const TIPOS_HISTORIAL = [
+    { valor: "CONTROL", texto: "Controles" },
+    { valor: "SINTOMA", texto: "Síntomas" },
+    { valor: "EXAMEN", texto: "Exámenes" },
+    { valor: "CITA", texto: "Citas" },
+    { valor: "ALERTA", texto: "Alertas" },
+];
+
 async function Historial({ embarazoId, pagina, ruta, params }: Props) {
-    const lista = await historial(embarazoId, { page: pagina, limit: 20 });
-    if (lista.datos.length === 0) {
-        return (
-            <Vacio
-                icono={History}
-                titulo="Sin registros todavía"
-                descripcion="Aquí se reúne todo lo que se registre sobre este embarazo."
-            />
-        );
-    }
+    // Un tipo inventado en la URL haría que la API responda 400.
+    const tipo = filtroValido(
+        params,
+        "tipo",
+        TIPOS_HISTORIAL.map((t) => t.valor),
+    );
+    const lista = await historial(embarazoId, { page: pagina, limit: 20, tipo });
     return (
         <>
-            <LineaTiempo eventos={lista.datos} />
+            <Filtros
+                ruta={ruta}
+                params={params}
+                nombre="tipo"
+                etiqueta="Tipo de registro"
+                opciones={TIPOS_HISTORIAL}
+                textoTodos="Todo"
+                className="mt-5"
+            />
+            {lista.datos.length === 0 ? (
+                <Vacio
+                    icono={History}
+                    titulo={tipo ? "No hay registros de ese tipo" : "Sin registros todavía"}
+                    descripcion={
+                        tipo
+                            ? "Prueba con otro filtro o mira todo el historial."
+                            : "Aquí se reúne todo lo que se registre sobre este embarazo."
+                    }
+                />
+            ) : (
+                <LineaTiempo eventos={lista.datos} />
+            )}
             <Paginacion ruta={ruta} params={params} paginacion={lista.paginacion} etiqueta="registros" />
         </>
     );
@@ -131,6 +162,26 @@ async function Controles({ embarazoId, pagina, ruta, params }: Props) {
                                     </li>
                                 ))}
                             </ul>
+                        )}
+
+                        {/* Solo el profesional que lo registró y durante 7 días: lo decide el servidor. */}
+                        {control.editable && (
+                            <div className="mt-3 flex justify-end gap-1 border-t border-border-firme pt-2">
+                                <DialogoCorregirControl embarazoId={embarazoId} control={control} />
+                                <DialogoEliminar
+                                    titulo="Eliminar el control"
+                                    descripcion={`Semana ${control.semana_gestacion} · ${fechaCompleta(control.fecha)}`}
+                                    accion={eliminarControl}
+                                    embarazoId={embarazoId}
+                                    elementoId={control.id}
+                                    motivoObligatorio
+                                >
+                                    <p>
+                                        Se eliminan también sus mediciones. Queda una copia de lo que había en
+                                        la auditoría, con tu nombre y el motivo.
+                                    </p>
+                                </DialogoEliminar>
+                            </div>
                         )}
                     </li>
                 ))}
@@ -286,6 +337,22 @@ async function Examenes({ embarazoId, pagina, ruta, params }: Props) {
                                 {examen.observaciones}
                             </p>
                         )}
+
+                        {examen.editable && (
+                            <div className="mt-3 flex justify-end gap-1 border-t border-border-firme pt-2">
+                                <DialogoCorregirExamen embarazoId={embarazoId} examen={examen} />
+                                <DialogoEliminar
+                                    titulo="Eliminar el examen"
+                                    descripcion={examen.tipo_nombre}
+                                    accion={eliminarExamen}
+                                    embarazoId={embarazoId}
+                                    elementoId={examen.id}
+                                    motivoObligatorio
+                                >
+                                    <p>La paciente dejará de verlo. Queda una copia en la auditoría.</p>
+                                </DialogoEliminar>
+                            </div>
+                        )}
                     </li>
                 ))}
             </ul>
@@ -364,12 +431,14 @@ async function Alertas({ embarazoId, pagina, ruta, params }: Props) {
                         mensaje={alerta.mensaje}
                         generadaEn={alerta.generada_en}
                         estado={ESTADO_ALERTA_TEXTO[alerta.estado]}
+                        anulada={alerta.estado === "ANULADA"}
                         detalle={
                             [
                                 alerta.valor_detectado != null &&
                                     `Valor registrado: ${alerta.valor_detectado}${alerta.unidad ? ` ${alerta.unidad}` : ""}.`,
                                 alerta.revisor && `Revisada por ${alerta.revisor}.`,
                                 alerta.observacion_revision,
+                                alerta.motivo_anulacion,
                             ]
                                 .filter(Boolean)
                                 .join(" ") || null

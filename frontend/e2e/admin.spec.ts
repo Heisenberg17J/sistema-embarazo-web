@@ -212,4 +212,36 @@ test.describe("Pantallas del administrador", () => {
         await page.reload();
         await expect(fila.getByLabel(/Valor de/)).toHaveValue("5");
     });
+
+    test("un valor fuera de rango se rechaza y los parámetros del entorno no aparecen", async ({
+        page,
+    }) => {
+        await page.goto("/admin/configuracion");
+        await expect(contenido(page).getByText("sesion_horas_vigencia")).toHaveCount(0);
+        await expect(contenido(page).getByText("backup_frecuencia_horas")).toHaveCount(0);
+
+        const fila = contenido(page)
+            .getByRole("listitem")
+            .filter({ hasText: "semanas_max_gestacion" });
+        await fila.getByLabel(/Valor de/).fill("60");
+        await fila.getByRole("button", { name: "Guardar" }).click();
+        await expect(fila.locator("[role=alert]").filter({ hasText: /entre 38 y 45/ })).toBeVisible();
+    });
+
+    test("los días de aviso configurados destacan la próxima cita de la gestante", async ({
+        page,
+    }) => {
+        // La cita de prueba es dentro de 7 días: con 10 de aviso se destaca.
+        await page.goto("/admin/configuracion");
+        const fila = contenido(page)
+            .getByRole("listitem")
+            .filter({ hasText: "dias_recordatorio_cita" });
+        await fila.getByLabel(/Valor de/).fill("10");
+        await fila.getByRole("button", { name: "Guardar" }).click();
+        await expect(fila.getByRole("button", { name: "Guardado" })).toBeVisible();
+
+        await salir(page);
+        await entrar(page, USUARIOS.gestante);
+        await expect(page.getByRole("main").getByText("Faltan 7 días")).toBeVisible();
+    });
 });

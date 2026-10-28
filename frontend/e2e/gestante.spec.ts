@@ -178,4 +178,21 @@ test.describe("Pantallas de la gestante", () => {
         await expect(page.getByText("Hemograma completo")).toBeVisible();
         await expect(page.getByText(/Hemoglobina/)).toBeVisible();
     });
+
+    test("la pantalla de controles muestra lo que registró el profesional", async ({ page }) => {
+        await page.goto("/mas");
+        await page.getByRole("main").getByRole("link", { name: "Controles" }).click();
+        await expect(page).toHaveURL(/\/controles$/);
+        await expect(page.getByRole("heading", { name: "Mis controles" })).toBeVisible();
+        await expect(page.getByText("Evolución dentro de lo esperado.")).toBeVisible();
+        await expect(page.getByText(/^Semana \d+$/).first()).toBeVisible();
+    });
+
+    test("el panel dice quién es mi profesional y cómo llamarle", async ({ page }) => {
+        await page.goto("/panel");
+        await expect(page.getByRole("main").getByText("Tu profesional de salud", { exact: true })).toBeVisible();
+        await expect(page.getByRole("main").getByText(/Carlos Mejía/).first()).toBeVisible();
+        // Nunca se muestra el correo de acceso del profesional.
+        await expect(page.getByRole("main").getByText("cmejia@seguimiento.co")).toHaveCount(0);
+    });
 });

@@ -30,8 +30,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files: las variables reales no se suben, pero la plantilla sí
 .env*
+!.env.example
 
 # vercel
 .vercel

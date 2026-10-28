@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Save } from "lucide-react";
 import { actualizarPerfil, type EstadoPerfil } from "@/acciones/perfil";
 import { Boton } from "@/components/ui/boton";
@@ -9,6 +9,7 @@ import { AvisoExito } from "@/components/ui/aviso-exito";
 import { AvisoError, Campo } from "@/components/ui/campo";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import type { PerfilGestante, PerfilProfesional, Rol, Usuario } from "@/lib/tipos";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: EstadoPerfil = {};
 const GRUPOS = ["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"];
@@ -56,7 +57,7 @@ export function FormularioPerfil({
     faltaContacto?: boolean;
 }) {
     const router = useRouter();
-    const [estado, enviar, enviando] = useActionState(actualizarPerfil, INICIAL);
+    const [estado, enviar, enviando] = useAccion(actualizarPerfil, INICIAL);
     const e = estado.porCampo ?? {};
     // Controlado: un <select> no controlado pierde la opción elegida cuando
     // React restablece el formulario al terminar la acción.
@@ -76,7 +77,7 @@ export function FormularioPerfil({
 
     return (
         <Tarjeta>
-            <form action={enviar} className="space-y-7" noValidate>
+            <form onSubmit={enviar} className="space-y-7" noValidate>
                 <input type="hidden" name="rol" value={rol} />
 
                 <AvisoError>{estado.error}</AvisoError>

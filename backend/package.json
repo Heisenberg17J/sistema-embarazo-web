@@ -13,6 +13,8 @@
     "migrate": "node scripts/migrate.js",
     "seed": "node scripts/migrate.js --solo-seed",
     "db:reset": "node scripts/migrate.js --reset --seed",
+    "limpiar": "node scripts/limpiar.js",
+    "crear-admin": "node scripts/crear-admin.js",
     "test": "jest --runInBand"
   },
   "jest": {

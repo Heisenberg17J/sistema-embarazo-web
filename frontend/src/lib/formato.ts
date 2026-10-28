@@ -119,26 +119,32 @@ export const ESTADO_ALERTA_TEXTO: Record<string, string> = {
     PENDIENTE: "Pendiente",
     REVISADA: "Revisada",
     DESCARTADA: "Descartada",
+    ANULADA: "Anulada",
 };
 
 /**
- * Fecha de hoy en la zona local, como "AAAA-MM-DD".
- *
- * No sirve `toISOString()` a secas: pasa a UTC y después de las 7 p. m. en
- * Colombia devolvería la fecha de mañana.
+ * Zona horaria de la aplicación. Las fechas de negocio (la semana de gestación,
+ * la fecha de un síntoma, "las citas de hoy") son fechas de Colombia, no de la
+ * máquina que ejecuta el servidor: un servicio gestionado casi siempre corre en
+ * UTC, donde entre las 7 p. m. y la medianoche ya es "mañana".
  */
-export const hoyLocal = () => {
-    const d = new Date();
-    return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-        .toISOString()
-        .slice(0, 10);
-};
+export const ZONA_HORARIA = "America/Bogota";
 
-/** Fecha local desplazada en días: `enDias(7)` es dentro de una semana. */
+const aFechaIso = new Intl.DateTimeFormat("en-CA", {
+    timeZone: ZONA_HORARIA,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+});
+
+/** Fecha de hoy como "AAAA-MM-DD", en la zona de la aplicación. */
+export const hoyLocal = () => aFechaIso.format(new Date());
+
+/** Fecha desplazada en días: `enDias(7)` es dentro de una semana. */
 export const enDias = (dias: number) => {
-    const d = new Date();
-    d.setDate(d.getDate() + dias);
-    return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-        .toISOString()
-        .slice(0, 10);
+    // 12:00 UTC cae en el mismo día calendario de Colombia (UTC-5) y no se ve
+    // afectado por el borde de medianoche al sumar días.
+    const base = new Date(`${hoyLocal()}T12:00:00Z`);
+    base.setUTCDate(base.getUTCDate() + dias);
+    return base.toISOString().slice(0, 10);
 };

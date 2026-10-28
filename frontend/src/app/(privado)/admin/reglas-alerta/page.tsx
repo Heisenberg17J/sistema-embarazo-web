@@ -108,6 +108,9 @@ function ItemRegla({ regla: r, tipos }: { regla: ReglaAlerta; tipos: TipoMedicio
                         {estilo.etiqueta}
                     </Insignia>
                     {!r.activa && <Insignia>Inactiva</Insignia>}
+                    {r.activa && !r.aprobada_en && (
+                        <Insignia tono="advertencia">Sin aprobación clínica</Insignia>
+                    )}
                 </div>
             </div>
 

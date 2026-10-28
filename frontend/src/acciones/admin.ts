@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ErrorApi, api } from "@/lib/api";
 import type { Asignacion, Contenido, Usuario } from "@/lib/tipos";
+import { hoyLocal } from "@/lib/formato";
 
 /**
  * Acciones del administrador (RF-14, RF-15, RF-16 y configuración).
@@ -157,12 +158,7 @@ const codigo = z
     .toUpperCase()
     .regex(/^[A-Z0-9_]{2,30}$/, "Solo mayúsculas, números y guion bajo (2 a 30)");
 
-const hoy = () => {
-    const d = new Date();
-    return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-        .toISOString()
-        .slice(0, 10);
-};
+const hoy = hoyLocal;
 
 // ---------------------------------------------------------------------------
 // Usuarios (RF-14)
@@ -738,6 +734,51 @@ export async function guardarParametro(
         );
         revalidarAdmin();
         return { ok: true, resumen: "Guardado." };
+    } catch (error) {
+        return aResultado(error, datos);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Derecho de supresión (Ley 1581)
+// ---------------------------------------------------------------------------
+
+const esquemaAtender = z
+    .object({
+        solicitud_id: id,
+        accion: z.enum(["ANONIMIZAR", "RECHAZAR"], { error: "Elige qué hacer con la solicitud" }),
+        respuesta: z.preprocess(
+            (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+            z.string().trim().max(500, "Máximo 500 caracteres").optional(),
+        ),
+    })
+    .refine((d) => d.accion !== "RECHAZAR" || d.respuesta, {
+        message: "Explica por qué se rechaza: la persona lo leerá",
+        path: ["respuesta"],
+    });
+
+/**
+ * ANONIMIZAR destruye lo que identifica a la persona y deja los registros
+ * clínicos sin nombre; no se puede deshacer. RECHAZAR deja la cuenta como está.
+ */
+export async function atenderSolicitudSupresion(
+    _previo: ResultadoAdmin,
+    datos: FormData,
+): Promise<ResultadoAdmin> {
+    const valido = esquemaAtender.safeParse(Object.fromEntries(datos));
+    if (!valido.success) {
+        return {
+            error: "Revisa los datos marcados.",
+            porCampo: Object.fromEntries(valido.error.issues.map((i) => [i.path.join("."), i.message])),
+            valores: valoresDe(datos),
+        };
+    }
+
+    const { solicitud_id: solicitudId, ...cuerpo } = valido.data;
+    try {
+        await api.post(`/admin/solicitudes-supresion/${solicitudId}/atender`, cuerpo);
+        revalidarAdmin();
+        return { ok: true };
     } catch (error) {
         return aResultado(error, datos);
     }

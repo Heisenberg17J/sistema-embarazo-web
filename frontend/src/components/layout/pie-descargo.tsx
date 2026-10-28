@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { DESCARGO } from "@/lib/marca";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +14,21 @@ export function PieDescargo({ className }: { className?: string }) {
                 className,
             )}
         >
-            {DESCARGO}
+            <p>{DESCARGO}</p>
+            <p className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
+                <Link
+                    href="/politica-de-privacidad"
+                    className="underline-offset-4 hover:text-foreground hover:underline"
+                >
+                    Política de datos
+                </Link>
+                <Link
+                    href="/terminos"
+                    className="underline-offset-4 hover:text-foreground hover:underline"
+                >
+                    Términos de uso
+                </Link>
+            </p>
         </footer>
     );
 }

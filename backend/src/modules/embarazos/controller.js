@@ -5,9 +5,10 @@ const { puedeVerGestante } = require('../../middlewares/acceso');
 const { registrarAuditoria, ipDe } = require('../../services/auditoria');
 const { actualizarParcial } = require('../../services/usuarios');
 const { resumenEmbarazo } = require('../../services/embarazo');
+const { hoy, diasEntre } = require('../../utils/fechas');
+const configuracion = require('../../services/configuracion');
 
 const DIAS_GESTACION = 280;   // Regla de Naegele: FPP = FUM + 280 días
-const DIAS_MAX_FUM = 44 * 7;  // Una FUM más antigua no corresponde a un embarazo en curso
 
 const sumarDias = (fechaIso, dias) => {
     const d = new Date(`${fechaIso}T00:00:00Z`);
@@ -15,7 +16,7 @@ const sumarDias = (fechaIso, dias) => {
     return d.toISOString().slice(0, 10);
 };
 
-const diasDesde = (fechaIso) => Math.floor((Date.now() - new Date(`${fechaIso}T00:00:00`).getTime()) / 86400000);
+const diasDesde = (fechaIso) => diasEntre(fechaIso, hoy());
 
 // Determina sobre qué gestante se actúa: la gestante sobre sí misma; el profesional sobre una asignada.
 const gestanteObjetivo = async (req, gestanteId) => {
@@ -29,8 +30,10 @@ const gestanteObjetivo = async (req, gestanteId) => {
 const crear = async (req, res) => {
     const { gestante_id: gestanteIdBody, fecha_inicio: fum, fecha_estimada_parto: fpp, ...resto } = req.body;
     const gestanteId = await gestanteObjetivo(req, gestanteIdBody);
-    if (diasDesde(fum) > DIAS_MAX_FUM) {
-        throw new HttpError(422, 'La fecha de última menstruación indica más de 44 semanas; revisa la fecha');
+    // Una FUM más antigua que la semana máxima no corresponde a un embarazo en curso.
+    const semanasMax = await configuracion.entero('semanas_max_gestacion');
+    if (diasDesde(fum) > semanasMax * 7) {
+        throw new HttpError(422, `La fecha de última menstruación indica más de ${semanasMax} semanas; revisa la fecha`);
     }
 
     const resumen = await transaccion(async (db) => {
@@ -68,11 +71,69 @@ const obtener = async (req, res) => {
     res.status(200).json(await resumenEmbarazo(pool, req.embarazo.id));
 };
 
+// Corrige los datos del embarazo. Cambiar la fecha de última menstruación (FUM) no es un cambio más:
+// de ella salen la semana de gestación y la fecha probable de parto, y las semanas que ya se
+// guardaron en controles y mediciones se calcularon con la fecha anterior. Si no se recalculan,
+// las gráficas de evolución quedarían desfasadas respecto de la nueva FUM.
 const actualizar = async (req, res) => {
+    const { fecha_inicio: nuevaFum, fecha_estimada_parto: nuevaFpp, ...resto } = req.body;
+    const cambiaFum = nuevaFum !== undefined && nuevaFum !== req.embarazo.fecha_inicio;
+
+    const semanasMax = await configuracion.entero('semanas_max_gestacion');
+    if (nuevaFum !== undefined && diasDesde(nuevaFum) > semanasMax * 7) {
+        throw new HttpError(422, `La fecha de última menstruación indica más de ${semanasMax} semanas; revisa la fecha`);
+    }
+
     const resumen = await transaccion(async (db) => {
-        await actualizarParcial(db, 'embarazo', 'id', req.embarazo.id, req.body,
+        // Una FUM posterior a algo ya registrado deja ese dato "antes de que empezara el embarazo": la
+        // función de semanas lo pondría en la semana 0 sin avisar. Se rechaza y se dice cuál es el límite.
+        if (cambiaFum) {
+            const { rows: [{ primero }] } = await db.query(
+                `SELECT LEAST(
+                    (SELECT min(fecha) FROM control WHERE embarazo_id = $1),
+                    (SELECT min(fecha_registro::date) FROM medicion WHERE embarazo_id = $1),
+                    (SELECT min(fecha) FROM sintoma WHERE embarazo_id = $1))::text AS primero`, [req.embarazo.id]
+            );
+            if (primero && nuevaFum > primero) {
+                throw new HttpError(422, `La fecha de última menstruación no puede ser posterior al primer registro del embarazo, que es del ${primero}`);
+            }
+        }
+
+        const cambios = { ...resto };
+        if (cambiaFum) {
+            cambios.fecha_inicio = nuevaFum;
+            // La fecha probable de parto sigue a la FUM, salvo que se indique otra a propósito.
+            cambios.fecha_estimada_parto = nuevaFpp ?? sumarDias(nuevaFum, DIAS_GESTACION);
+        } else if (nuevaFpp !== undefined) {
+            cambios.fecha_estimada_parto = nuevaFpp;
+        }
+
+        await actualizarParcial(db, 'embarazo', 'id', req.embarazo.id, cambios,
             ['fecha_inicio', 'fecha_estimada_parto', 'talla_cm', 'peso_pregestacional_kg', 'observaciones']);
-        await registrarAuditoria(db, { usuarioId: req.usuario.id, accion: 'MODIFICAR', entidad: 'embarazo', entidadId: req.embarazo.id, detalle: { campos: Object.keys(req.body) }, ip: ipDe(req) });
+
+        let recalculados = null;
+        if (cambiaFum) {
+            const c = await db.query(
+                'UPDATE control SET semana_gestacion = fn_semana_gestacion($2, fecha) WHERE embarazo_id = $1', [req.embarazo.id, nuevaFum]
+            );
+            const m = await db.query(
+                'UPDATE medicion SET semana_gestacion = fn_semana_gestacion($2, fecha_registro::date) WHERE embarazo_id = $1', [req.embarazo.id, nuevaFum]
+            );
+            recalculados = { controles: c.rowCount, mediciones: m.rowCount };
+        }
+
+        await registrarAuditoria(db, {
+            usuarioId: req.usuario.id, accion: 'MODIFICAR', entidad: 'embarazo', entidadId: req.embarazo.id,
+            detalle: {
+                campos: Object.keys(req.body),
+                ...(cambiaFum && {
+                    fecha_inicio: { antes: req.embarazo.fecha_inicio, despues: nuevaFum },
+                    fecha_estimada_parto: { antes: req.embarazo.fecha_estimada_parto, despues: cambios.fecha_estimada_parto },
+                    semanas_recalculadas: recalculados
+                })
+            },
+            ip: ipDe(req)
+        });
         return resumenEmbarazo(db, req.embarazo.id);
     });
     res.status(200).json(resumen);

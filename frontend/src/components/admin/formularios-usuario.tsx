@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { KeyRound, RefreshCw, Save, UserPlus } from "lucide-react";
 import {
     crearUsuario,
@@ -16,6 +16,7 @@ import { AvisoError, Campo } from "@/components/ui/campo";
 import { hoyLocal } from "@/lib/formato";
 import { ROL_TEXTO } from "@/lib/navegacion";
 import type { PerfilGestante, PerfilProfesional, Rol, Usuario } from "@/lib/tipos";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: ResultadoAdmin = {};
 
@@ -347,7 +348,7 @@ function FormularioNuevo({
     rolInicial?: Rol;
     onExito: () => void;
 }) {
-    const [estado, enviar, enviando] = useActionState(crearUsuario, INICIAL);
+    const [estado, enviar, enviando] = useAccion(crearUsuario, INICIAL);
     const e = estado.porCampo ?? {};
     const v = estado.valores ?? {};
     const [rol, setRol] = useState<Rol>(rolInicial ?? "PROFESIONAL");
@@ -371,7 +372,7 @@ function FormularioNuevo({
     }
 
     return (
-        <form action={enviar} className="space-y-4" noValidate>
+        <form onSubmit={enviar} className="space-y-4" noValidate>
             <AvisoError>{estado.error}</AvisoError>
 
             <Campo etiqueta="Rol" obligatorio error={e.rol}>
@@ -418,7 +419,7 @@ function FormularioNuevo({
 
 /** La acción revalida la ficha: no hace falta refrescar desde aquí. */
 export function FormularioEditarUsuario({ usuario }: { usuario: Usuario }) {
-    const [estado, enviar, enviando] = useActionState(editarUsuario, INICIAL);
+    const [estado, enviar, enviando] = useAccion(editarUsuario, INICIAL);
     const e = estado.porCampo ?? {};
     const perfil = (usuario.perfil ?? {}) as Partial<PerfilGestante & PerfilProfesional>;
     const v: Valores = estado.valores ?? {
@@ -429,7 +430,7 @@ export function FormularioEditarUsuario({ usuario }: { usuario: Usuario }) {
     };
 
     return (
-        <form action={enviar} className="space-y-4" noValidate>
+        <form onSubmit={enviar} className="space-y-4" noValidate>
             <input type="hidden" name="usuario_id" value={usuario.id} />
             <input type="hidden" name="rol" value={usuario.rol} />
 
@@ -484,7 +485,7 @@ function FormularioRestablecer({
     usuarioId: number;
     onExito: () => void;
 }) {
-    const [estado, enviar, enviando] = useActionState(restablecerContrasena, INICIAL);
+    const [estado, enviar, enviando] = useAccion(restablecerContrasena, INICIAL);
 
     useEffect(() => {
         if (estado.ok) onExito();
@@ -494,7 +495,7 @@ function FormularioRestablecer({
     if (estado.ok) return <AvisoExito>{estado.resumen}</AvisoExito>;
 
     return (
-        <form action={enviar} className="space-y-4" noValidate>
+        <form onSubmit={enviar} className="space-y-4" noValidate>
             <input type="hidden" name="usuario_id" value={usuarioId} />
             <AvisoError>{estado.error}</AvisoError>
 

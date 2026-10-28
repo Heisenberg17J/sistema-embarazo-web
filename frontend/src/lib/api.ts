@@ -71,7 +71,7 @@ async function pedir<T>(ruta: string, opciones: Opciones = {}): Promise<T> {
     } catch {
         throw new ErrorApi(
             503,
-            "No se pudo conectar con el servidor. Revise su conexión e intente de nuevo.",
+            "No se pudo conectar con el servidor. Revisa tu conexión e intenta de nuevo.",
         );
     }
 
@@ -106,8 +106,9 @@ export const api = {
         pedir<T>(ruta, { ...opciones, method: "POST", body }),
     patch: <T>(ruta: string, body?: unknown, opciones?: Opciones) =>
         pedir<T>(ruta, { ...opciones, method: "PATCH", body }),
-    delete: <T>(ruta: string, opciones?: Opciones) =>
-        pedir<T>(ruta, { ...opciones, method: "DELETE" }),
+    /** El motivo de eliminar un registro clínico viaja en el cuerpo. */
+    delete: <T>(ruta: string, body?: unknown, opciones?: Opciones) =>
+        pedir<T>(ruta, { ...opciones, method: "DELETE", body }),
 };
 
 /**

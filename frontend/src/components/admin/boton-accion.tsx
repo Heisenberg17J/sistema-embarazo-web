@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import type { ResultadoAdmin } from "@/acciones/admin";
 import { Boton } from "@/components/ui/boton";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: ResultadoAdmin = {};
 
@@ -23,10 +24,10 @@ export function BotonAccion({
     children: ReactNode;
     pendiente?: string;
 }) {
-    const [estado, enviar, enviando] = useActionState(accion, INICIAL);
+    const [estado, enviar, enviando] = useAccion(accion, INICIAL);
 
     return (
-        <form action={enviar} className="inline-flex flex-col items-end gap-1">
+        <form onSubmit={enviar} className="inline-flex flex-col items-end gap-1">
             {Object.entries(campos).map(([nombre, valor]) => (
                 <input key={nombre} type="hidden" name={nombre} value={valor} />
             ))}

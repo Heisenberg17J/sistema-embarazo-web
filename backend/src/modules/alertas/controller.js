@@ -9,6 +9,7 @@ const SELECT_ALERTA = `
            a.severidad, a.mensaje, a.valor_detectado, tm.codigo AS tipo_medicion, tm.unidad,
            ts.codigo AS tipo_sintoma, ra.codigo AS regla, a.estado, a.generada_en,
            a.revisada_por, ur.nombre || ' ' || ur.apellido AS revisor, a.fecha_revision, a.observacion_revision,
+           a.anulada_en, a.motivo_anulacion,
            (a.severidad = 'CRITICA') AS accion_inmediata
       FROM alerta a
       JOIN embarazo e ON e.id = a.embarazo_id
@@ -20,7 +21,8 @@ const SELECT_ALERTA = `
       LEFT JOIN tipo_sintoma ts ON ts.id = s.tipo_sintoma_id
       LEFT JOIN usuario ur ON ur.id = a.revisada_por`;
 
-const ORDEN = `ORDER BY CASE a.severidad WHEN 'CRITICA' THEN 1 WHEN 'ADVERTENCIA' THEN 2 ELSE 3 END, a.generada_en DESC`;
+// Las anuladas van al final: son historia, no lo que hay que atender.
+const ORDEN = `ORDER BY (a.estado = 'ANULADA'), CASE a.severidad WHEN 'CRITICA' THEN 1 WHEN 'ADVERTENCIA' THEN 2 ELSE 3 END, a.generada_en DESC`;
 
 const responder = (res, rows, total, pag) => res.status(200).json({ ...paginado(rows, total, pag), aviso: AVISO });
 

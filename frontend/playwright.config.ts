@@ -26,6 +26,11 @@ export default defineConfig({
     projects: [
         { name: "escritorio", use: { ...devices["Desktop Chrome"] } },
         { name: "movil", use: { ...devices["Pixel 5"] } },
+        // RNF-08: Firefox y Safari. WebKit es el motor del iPhone, donde el vidrio esmerilado
+        // (backdrop-filter) y el fondo fijo del diseño dan más problemas.
+        { name: "firefox", use: { ...devices["Desktop Firefox"] } },
+        { name: "safari", use: { ...devices["Desktop Safari"] } },
+        { name: "iphone", use: { ...devices["iPhone 13"] } },
     ],
     webServer: {
         command: "npm start",

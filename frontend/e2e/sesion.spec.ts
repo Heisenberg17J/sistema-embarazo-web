@@ -51,7 +51,7 @@ test.describe("Sesión y control de acceso", () => {
         const error = page.locator("form").getByRole("alert");
         await expect(error).toContainText("Correo o contraseña incorrectos");
 
-        // El correo se conserva; la contraseña se limpia a propósito.
+        // El correo se conserva.
         await expect(page.getByLabel("Correo electrónico")).toHaveValue(
             USUARIOS.gestante.correo,
         );
@@ -86,7 +86,7 @@ test.describe("Sesión y control de acceso", () => {
         await page.getByRole("button", { name: "Crear cuenta" }).click();
 
         await expect(page.locator("form").getByRole("alert").first()).toContainText(
-            "Revise los datos marcados",
+            "Revisa los datos marcados",
         );
         await expect(page).toHaveURL(/\/registro$/);
 
@@ -100,8 +100,8 @@ test.describe("Sesión y control de acceso", () => {
         );
         await expect(contacto.getByLabel("EPS")).toHaveValue("Sanitas");
 
-        // Las contraseñas sí se limpian.
-        await expect(acceso.getByLabel(/^Contraseña/)).toHaveValue("");
+        // Las contraseñas también se conservan: volver a escribirlas tras cada error es un castigo.
+        await expect(acceso.getByLabel(/^Contraseña/)).toHaveValue("Clave1234");
     });
 
     test("el token de sesión no queda al alcance del JavaScript (RNF-03)", async ({

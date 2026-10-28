@@ -5,11 +5,12 @@ import { Saludo } from "@/components/layout/saludo";
 import { Boton } from "@/components/ui/boton";
 import { Insignia } from "@/components/ui/insignia";
 import { Panel, Tarjeta } from "@/components/ui/tarjeta";
-import { usuarioActual } from "@/lib/datos";
-import { fechaCompleta } from "@/lib/formato";
+import { solicitudSupresionPropia, usuarioActual } from "@/lib/datos";
+import { fechaCompleta, fechaCorta } from "@/lib/formato";
 import { ROL_TEXTO } from "@/lib/navegacion";
 import { exigirSesion } from "@/lib/sesion-servidor";
 import type { PerfilGestante, PerfilProfesional } from "@/lib/tipos";
+import { BotonDescargarDatos, DialogoSolicitarSupresion } from "./privacidad";
 import { FormularioPerfil } from "./formulario-perfil";
 
 export const metadata: Metadata = { title: "Mi perfil" };
@@ -24,6 +25,8 @@ const DOCUMENTO: Record<string, string> = {
 export default async function PaginaPerfil() {
     await exigirSesion();
     const usuario = await usuarioActual();
+    // Solo las gestantes pueden pedir la supresión de su cuenta.
+    const solicitud = usuario.rol === "GESTANTE" ? await solicitudSupresionPropia() : null;
 
     const gestante =
         usuario.rol === "GESTANTE" ? (usuario.perfil as PerfilGestante | null) : null;
@@ -106,6 +109,47 @@ export default async function PaginaPerfil() {
                         gestante && !gestante.contacto_emergencia_telefono,
                     )}
                 />
+
+                <Tarjeta>
+                    <h2 className="font-medium">Tus datos y privacidad</h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        Tienes derecho a conocer qué datos guardamos de ti y a pedir que
+                        se supriman. Lee la{" "}
+                        <Link
+                            href="/politica-de-privacidad"
+                            className="font-semibold text-brand-deep underline-offset-4 hover:underline"
+                        >
+                            política de tratamiento de datos
+                        </Link>
+                        .
+                    </p>
+
+                    <div className="mt-4 flex flex-wrap items-start gap-3">
+                        <BotonDescargarDatos />
+                        {usuario.rol === "GESTANTE" && solicitud?.estado !== "PENDIENTE" && (
+                            <DialogoSolicitarSupresion />
+                        )}
+                    </div>
+
+                    {solicitud?.estado === "PENDIENTE" && (
+                        <p
+                            role="status"
+                            className="mt-4 rounded-2xl bg-advertencia-suave px-4 py-3 text-sm font-medium text-advertencia"
+                        >
+                            Tu solicitud de eliminación está pendiente desde el{" "}
+                            {fechaCorta(solicitud.solicitada_en)}. El administrador la
+                            atenderá pronto.
+                        </p>
+                    )}
+                    {solicitud?.estado === "RECHAZADA" && (
+                        <p className="mt-4 rounded-2xl bg-surface-soft px-4 py-3 text-sm leading-relaxed">
+                            <span className="font-medium">
+                                Tu última solicitud no se pudo atender:
+                            </span>{" "}
+                            {solicitud.respuesta}
+                        </p>
+                    )}
+                </Tarjeta>
 
                 <Tarjeta>
                     <div className="flex flex-wrap items-center justify-between gap-3">

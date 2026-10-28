@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { BookPlus, Pencil, Save } from "lucide-react";
 import { guardarContenido, type ResultadoAdmin } from "@/acciones/admin";
 import { DialogoAccion } from "@/components/formularios/dialogo-accion";
@@ -8,6 +8,7 @@ import { Boton } from "@/components/ui/boton";
 import { AvisoExito } from "@/components/ui/aviso-exito";
 import { AvisoError, Campo } from "@/components/ui/campo";
 import type { Contenido } from "@/lib/tipos";
+import { useAccion } from "@/lib/usar-accion";
 
 const INICIAL: ResultadoAdmin = {};
 
@@ -55,7 +56,7 @@ function Formulario({
     categorias: string[];
     onExito: () => void;
 }) {
-    const [estado, enviar, enviando] = useActionState(guardarContenido, INICIAL);
+    const [estado, enviar, enviando] = useAccion(guardarContenido, INICIAL);
     const e = estado.porCampo ?? {};
     const v = estado.valores ?? {};
     const idLista = useId();
@@ -74,7 +75,7 @@ function Formulario({
         v[campo] ?? (contenido?.[campo] != null ? String(contenido[campo]) : "");
 
     return (
-        <form action={enviar} className="space-y-4" noValidate>
+        <form onSubmit={enviar} className="space-y-4" noValidate>
             {contenido && <input type="hidden" name="contenido_id" value={contenido.id} />}
             <AvisoError>{estado.error}</AvisoError>
 

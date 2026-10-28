@@ -19,6 +19,7 @@ const ESTADOS = [
     { valor: "PENDIENTE", texto: "Sin revisar" },
     { valor: "REVISADA", texto: "Revisadas" },
     { valor: "DESCARTADA", texto: "Descartadas" },
+    { valor: "ANULADA", texto: "Anuladas" },
 ];
 
 const SEVERIDADES = [
@@ -135,6 +136,7 @@ async function Bandeja({
                             mensaje={alerta.mensaje}
                             generadaEn={alerta.generada_en}
                             estado={ESTADO_ALERTA_TEXTO[alerta.estado]}
+                            anulada={alerta.estado === "ANULADA"}
                             detalle={
                                 [
                                     alerta.gestante,
@@ -142,6 +144,7 @@ async function Bandeja({
                                         `valor registrado: ${alerta.valor_detectado}${alerta.unidad ? ` ${alerta.unidad}` : ""}`,
                                     alerta.revisor && `revisada por ${alerta.revisor}`,
                                     alerta.observacion_revision,
+                                    alerta.motivo_anulacion,
                                 ]
                                     .filter(Boolean)
                                     .join(" · ") || null
