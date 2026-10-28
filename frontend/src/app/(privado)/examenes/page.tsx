@@ -3,7 +3,7 @@ import { FlaskConical } from "lucide-react";
 import { Saludo } from "@/components/layout/saludo";
 import { SinEmbarazo } from "@/components/paneles/sin-embarazo";
 import { Insignia } from "@/components/ui/insignia";
-import { Paginacion } from "@/components/ui/paginacion";
+import { ANCLA_LISTA, Paginacion } from "@/components/ui/paginacion";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { Vacio } from "@/components/ui/vacio";
 import { embarazoActivo, examenes } from "@/lib/datos";
@@ -45,7 +45,7 @@ export default async function PaginaExamenes({
                 subtitulo="Resultados registrados por tu profesional de salud. Si algo no te queda claro, pregúntale en tu próximo control."
             />
 
-            <Tarjeta>
+            <Tarjeta id={ANCLA_LISTA} className="scroll-mt-4">
                 {lista.datos.length === 0 ? (
                     <Vacio
                         icono={FlaskConical}

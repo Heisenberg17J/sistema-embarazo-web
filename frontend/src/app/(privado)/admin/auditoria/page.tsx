@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import Form from "next/form";
 import Link from "next/link";
 import { ShieldCheck, X } from "lucide-react";
 import { Saludo } from "@/components/layout/saludo";
 import { Boton } from "@/components/ui/boton";
 import { Filtros, filtroValido, unParam } from "@/components/ui/filtros";
 import { Insignia, type TonoInsignia } from "@/components/ui/insignia";
-import { Paginacion } from "@/components/ui/paginacion";
+import { ANCLA_LISTA, Paginacion } from "@/components/ui/paginacion";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { Vacio } from "@/components/ui/vacio";
 import { auditoria } from "@/lib/datos";
@@ -85,7 +86,7 @@ export default async function PaginaAuditoria({
                 subtitulo="Quién hizo qué y cuándo (RNF-14). La bitácora es de solo lectura: nadie puede editarla ni borrarla."
             />
 
-            <Tarjeta>
+            <Tarjeta id={ANCLA_LISTA} className="scroll-mt-4">
                 <div className="space-y-3">
                     <Filtros
                         ruta="/admin/auditoria"
@@ -97,8 +98,9 @@ export default async function PaginaAuditoria({
                     />
 
                     {/* Formulario GET: el rango queda en la URL junto a los demás filtros. */}
-                    <form
+                    <Form
                         action="/admin/auditoria"
+                        scroll={false}
                         className="flex flex-wrap items-end gap-2"
                     >
                         {accion && <input type="hidden" name="accion" value={accion} />}
@@ -131,6 +133,7 @@ export default async function PaginaAuditoria({
                         {(filtros.desde || filtros.hasta) && (
                             <Boton comoHijo variante="fantasma">
                                 <Link
+                                    scroll={false}
                                     href={`/admin/auditoria?${new URLSearchParams({
                                         ...(accion ? { accion } : {}),
                                         ...(usuarioId ? { usuario_id: String(usuarioId) } : {}),
@@ -140,12 +143,13 @@ export default async function PaginaAuditoria({
                                 </Link>
                             </Boton>
                         )}
-                    </form>
+                    </Form>
 
                     {usuarioId && (
                         <p className="flex items-center gap-2 text-sm">
                             Solo las acciones del usuario #{usuarioId}
                             <Link
+                                scroll={false}
                                 href={`/admin/auditoria${sinUsuario ? `?${sinUsuario}` : ""}`}
                                 className="toque inline-grid place-items-center rounded-full text-muted-foreground hover:bg-surface-soft"
                                 aria-label="Quitar el filtro de usuario"
@@ -238,7 +242,7 @@ function Registro({ registro: r }: { registro: RegistroAuditoria }) {
                 <p className="mt-1 text-sm">
                     {r.usuario_id ? (
                         <Link
-                            href={`/admin/auditoria?usuario_id=${r.usuario_id}`}
+                            href={`/admin/auditoria?usuario_id=${r.usuario_id}#${ANCLA_LISTA}`}
                             className="font-medium hover:underline"
                             title="Ver solo las acciones de este usuario"
                         >

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 import { CalendarX } from "lucide-react";
 import { cancelarCita, type EstadoCancelacion } from "@/acciones/citas";
@@ -17,7 +16,6 @@ export function BotonCancelar({
     citaId: number;
     descripcion: string;
 }) {
-    const router = useRouter();
     const [abierto, setAbierto] = useState(false);
     // Remontar el formulario tras una cancelación deja el estado limpio por si
     // la gestante vuelve a abrir el diálogo en otra cita.
@@ -41,9 +39,9 @@ export function BotonCancelar({
                     citaId={citaId}
                     onExito={() => {
                         setAbierto(false);
+                        // La cita ya cancelada llega con la respuesta de la
+                        // acción, que revalida /citas.
                         setGeneracion((g) => g + 1);
-                        // Trae la cita ya cancelada desde el servidor.
-                        router.refresh();
                     }}
                     onCerrar={() => setAbierto(false)}
                 />

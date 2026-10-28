@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ErrorApi, api } from "@/lib/api";
 
@@ -48,7 +49,10 @@ export async function cancelarCita(
         return { error: "No se pudo cancelar la cita. Intenta de nuevo." };
     }
 
-    // El refresco lo pide el diálogo al cerrarse: revalidar aquí lo remontaría
-    // y se perdería el resultado de la acción.
+    // Se revalida aquí y no con router.refresh() desde el diálogo: un refresco
+    // lanzado justo al terminar la acción a veces se perdía y la cita seguía
+    // apareciendo como programada. El diálogo se cierra al tener éxito, así que
+    // no hay resultado que se pierda al remontarlo.
+    revalidatePath("/citas");
     return { ok: true };
 }

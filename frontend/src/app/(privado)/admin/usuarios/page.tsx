@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Form from "next/form";
 import Link from "next/link";
 import { ChevronRight, Search, Users } from "lucide-react";
 import { DialogoNuevoUsuario } from "@/components/admin/formularios-usuario";
@@ -6,7 +7,7 @@ import { Saludo } from "@/components/layout/saludo";
 import { Boton } from "@/components/ui/boton";
 import { Filtros, filtroValido, unParam } from "@/components/ui/filtros";
 import { Insignia } from "@/components/ui/insignia";
-import { Paginacion } from "@/components/ui/paginacion";
+import { ANCLA_LISTA, Paginacion } from "@/components/ui/paginacion";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { Vacio } from "@/components/ui/vacio";
 import { usuarios } from "@/lib/datos";
@@ -52,10 +53,11 @@ export default async function PaginaUsuarios({
                 acciones={<DialogoNuevoUsuario rolInicial={rol as Rol | undefined} />}
             />
 
-            <Tarjeta>
+            <Tarjeta id={ANCLA_LISTA} className="scroll-mt-4">
                 <div className="space-y-3">
-                    {/* Formulario GET: busca sin JavaScript y conserva los filtros. */}
-                    <form action="/admin/usuarios" className="flex gap-2">
+                    {/* Formulario GET: la búsqueda queda en la URL y conserva los filtros.
+                        Con next/form navega sin recargar ni subir al inicio. */}
+                    <Form scroll={false} action="/admin/usuarios" className="flex gap-2">
                         {rol && <input type="hidden" name="rol" value={rol} />}
                         {activo && <input type="hidden" name="activo" value={activo} />}
                         <div className="relative flex-1">
@@ -75,7 +77,7 @@ export default async function PaginaUsuarios({
                         <Boton type="submit" variante="vidrio">
                             Buscar
                         </Boton>
-                    </form>
+                    </Form>
 
                     <Filtros
                         ruta="/admin/usuarios"

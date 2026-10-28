@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Form from "next/form";
 import Link from "next/link";
 import { BookOpen, Search, Trash2 } from "lucide-react";
 import { eliminarContenido, publicarContenido } from "@/acciones/admin";
@@ -9,7 +10,7 @@ import { Saludo } from "@/components/layout/saludo";
 import { Boton } from "@/components/ui/boton";
 import { Filtros, filtroValido, unParam } from "@/components/ui/filtros";
 import { Insignia } from "@/components/ui/insignia";
-import { Paginacion } from "@/components/ui/paginacion";
+import { ANCLA_LISTA, Paginacion } from "@/components/ui/paginacion";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { Vacio } from "@/components/ui/vacio";
 import { contenidos } from "@/lib/datos";
@@ -54,9 +55,9 @@ export default async function PaginaContenido({
                 acciones={<DialogoContenido categorias={categorias} />}
             />
 
-            <Tarjeta>
+            <Tarjeta id={ANCLA_LISTA} className="scroll-mt-4">
                 <div className="space-y-3">
-                    <form action="/admin/contenido" className="flex gap-2">
+                    <Form scroll={false} action="/admin/contenido" className="flex gap-2">
                         {publicado && <input type="hidden" name="publicado" value={publicado} />}
                         <div className="relative flex-1">
                             <Search
@@ -75,7 +76,7 @@ export default async function PaginaContenido({
                         <Boton type="submit" variante="vidrio">
                             Buscar
                         </Boton>
-                    </form>
+                    </Form>
 
                     <Filtros
                         ruta="/admin/contenido"

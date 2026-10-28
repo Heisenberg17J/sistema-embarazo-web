@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { BellRing } from "lucide-react";
 import { Saludo } from "@/components/layout/saludo";
 import { AlertaItem } from "@/components/paneles/alerta-item";
 import { SinEmbarazo } from "@/components/paneles/sin-embarazo";
-import { EsqueletoLista } from "@/components/ui/esqueleto";
 import { Filtros, filtroValido } from "@/components/ui/filtros";
-import { Paginacion } from "@/components/ui/paginacion";
+import { ANCLA_LISTA, Paginacion } from "@/components/ui/paginacion";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { Vacio } from "@/components/ui/vacio";
 import { alertas, embarazoActivo } from "@/lib/datos";
@@ -60,7 +58,7 @@ export default async function PaginaAlertas({
                 subtitulo="Avisos generados por los valores y síntomas que has registrado. Son orientativos, no un diagnóstico."
             />
 
-            <Tarjeta>
+            <Tarjeta id={ANCLA_LISTA} className="scroll-mt-4">
                 <Filtros
                     ruta="/alertas"
                     params={params}
@@ -70,14 +68,10 @@ export default async function PaginaAlertas({
                     textoTodos="Todas"
                 />
 
-                {/* Igual que en el historial: los filtros no se desmontan
-                    mientras llega la lista. */}
-                <Suspense
-                    key={`${estado ?? "todas"}-${pagina}`}
-                    fallback={<EsqueletoLista filas={3} />}
-                >
-                    <Lista estado={estado} pagina={pagina} params={params} />
-                </Suspense>
+                {/* Sin <Suspense>: con la lista suspendida, las acciones a veces se
+                    quedaban en "Guardando…" (ver el README). Los filtros siguen montados:
+                    mientras llega la lista nueva se ve la anterior. */}
+                <Lista estado={estado} pagina={pagina} params={params} />
             </Tarjeta>
         </>
     );

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Form from "next/form";
 import Link from "next/link";
 import { Search, Users } from "lucide-react";
 import { DialogoNuevaCita } from "@/components/formularios/dialogo-cita";
@@ -38,8 +39,9 @@ export default async function PaginaPacientes({
             />
 
             <Tarjeta>
-                {/* Formulario GET: busca sin JavaScript y deja la búsqueda en la URL. */}
-                <form action="/pro/pacientes" className="flex gap-2">
+                {/* Formulario GET: deja la búsqueda en la URL. Con next/form navega
+                    sin recargar la página ni subir al inicio. */}
+                <Form scroll={false} action="/pro/pacientes" className="flex gap-2">
                     <div className="relative flex-1">
                         <Search
                             className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
@@ -57,7 +59,7 @@ export default async function PaginaPacientes({
                     <Boton type="submit" variante="vidrio">
                         Buscar
                     </Boton>
-                </form>
+                </Form>
 
                 {lista.length === 0 ? (
                     <Vacio

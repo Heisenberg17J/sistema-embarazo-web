@@ -4,7 +4,7 @@ import { Saludo } from "@/components/layout/saludo";
 import { DialogoSintoma } from "@/components/formularios/dialogo-sintoma";
 import { SinEmbarazo } from "@/components/paneles/sin-embarazo";
 import { Insignia } from "@/components/ui/insignia";
-import { Paginacion } from "@/components/ui/paginacion";
+import { ANCLA_LISTA, Paginacion } from "@/components/ui/paginacion";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { Vacio } from "@/components/ui/vacio";
 import { embarazoActivo, sintomas, tiposSintoma, usuarioActual } from "@/lib/datos";
@@ -63,7 +63,7 @@ export default async function PaginaSintomas({
                 }
             />
 
-            <Tarjeta>
+            <Tarjeta id={ANCLA_LISTA} className="scroll-mt-4">
                 {lista.datos.length === 0 ? (
                     <Vacio
                         icono={Activity}

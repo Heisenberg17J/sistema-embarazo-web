@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
 import { BellRing, ChevronRight } from "lucide-react";
 import { DialogoRevisarAlerta } from "@/components/formularios/dialogo-revisar-alerta";
 import { Saludo } from "@/components/layout/saludo";
 import { AlertaItem } from "@/components/paneles/alerta-item";
 import { Boton } from "@/components/ui/boton";
-import { EsqueletoLista } from "@/components/ui/esqueleto";
 import { Filtros, TODOS, unParam } from "@/components/ui/filtros";
-import { Paginacion } from "@/components/ui/paginacion";
+import { ANCLA_LISTA, Paginacion } from "@/components/ui/paginacion";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { Vacio } from "@/components/ui/vacio";
 import { alertas } from "@/lib/datos";
@@ -61,7 +59,7 @@ export default async function PaginaBandejaAlertas({
                 subtitulo="Generadas por lo que registran tus pacientes y por los controles. Al revisarlas, ellas ven el cambio en su app."
             />
 
-            <Tarjeta>
+            <Tarjeta id={ANCLA_LISTA} className="scroll-mt-4">
                 <div className="space-y-3">
                     <Filtros
                         ruta="/pro/alertas"
@@ -82,18 +80,15 @@ export default async function PaginaBandejaAlertas({
                     />
                 </div>
 
-                {/* Solo la lista espera por el servidor: los filtros siguen montados. */}
-                <Suspense
-                    key={`${estado ?? "todas"}-${severidad ?? "todas"}-${pagina}`}
-                    fallback={<EsqueletoLista filas={4} />}
-                >
-                    <Bandeja
-                        estado={estado}
-                        severidad={severidad}
-                        pagina={pagina}
-                        params={params}
-                    />
-                </Suspense>
+                {/* Sin <Suspense>: con la lista suspendida, las acciones a veces se
+                    quedaban en "Guardando…" (ver el README). Los filtros siguen montados:
+                    mientras llega la lista nueva se ve la anterior. */}
+                <Bandeja
+                    estado={estado}
+                    severidad={severidad}
+                    pagina={pagina}
+                    params={params}
+                />
             </Tarjeta>
         </>
     );

@@ -76,6 +76,8 @@ export function Filtros({
                 <Link
                     key={o.valor}
                     href={href(o.valor)}
+                    // Cambiar de filtro no es cambiar de pantalla: no se sube al inicio.
+                    scroll={false}
                     aria-current={actual === o.valor ? "true" : undefined}
                     className={pastilla(actual === o.valor)}
                 >

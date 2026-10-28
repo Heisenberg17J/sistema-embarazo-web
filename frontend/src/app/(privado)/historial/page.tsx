@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { History } from "lucide-react";
 import { Saludo } from "@/components/layout/saludo";
 import { LineaTiempo } from "@/components/paneles/linea-tiempo";
 import { SinEmbarazo } from "@/components/paneles/sin-embarazo";
-import { EsqueletoLista } from "@/components/ui/esqueleto";
 import { Filtros, filtroValido } from "@/components/ui/filtros";
-import { Paginacion } from "@/components/ui/paginacion";
+import { ANCLA_LISTA, Paginacion } from "@/components/ui/paginacion";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { Vacio } from "@/components/ui/vacio";
 import { embarazoActivo, historial } from "@/lib/datos";
@@ -62,7 +60,7 @@ export default async function PaginaHistorial({
                 subtitulo="Todo tu seguimiento en orden, de lo más reciente a lo más antiguo."
             />
 
-            <Tarjeta>
+            <Tarjeta id={ANCLA_LISTA} className="scroll-mt-4">
                 <Filtros
                     ruta="/historial"
                     params={params}
@@ -72,16 +70,15 @@ export default async function PaginaHistorial({
                     textoTodos="Todo"
                 />
 
-                {/* Solo la lista espera por el servidor: los filtros siguen
-                    montados y se pueden volver a pulsar enseguida. */}
-                <Suspense key={`${tipo ?? "todos"}-${pagina}`} fallback={<EsqueletoLista />}>
-                    <Lista
-                        embarazoId={embarazo.embarazo_id}
-                        tipo={tipo}
-                        pagina={pagina}
-                        params={params}
-                    />
-                </Suspense>
+                {/* Sin <Suspense>: con la lista suspendida, las acciones a veces se
+                    quedaban en "Guardando…" (ver el README). Los filtros siguen montados:
+                    mientras llega la lista nueva se ve la anterior. */}
+                <Lista
+                    embarazoId={embarazo.embarazo_id}
+                    tipo={tipo}
+                    pagina={pagina}
+                    params={params}
+                />
             </Tarjeta>
         </>
     );
