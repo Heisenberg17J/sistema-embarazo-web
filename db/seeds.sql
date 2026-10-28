@@ -1,6 +1,6 @@
 -- =============================================================================
 --  Datos de prueba (opcional) — Sistema de Seguimiento del Embarazo
---  Ejecutar DESPUÉS de 01_esquema.sql
+--  Ejecutar DESPUÉS de las migraciones (db/migrations/*.sql)
 -- =============================================================================
 SET search_path TO seguimiento_embarazo, public;
 
@@ -52,7 +52,20 @@ FROM control c
 JOIN (VALUES ('PESO', 68.4), ('PA_SISTOLICA', 118), ('PA_DIASTOLICA', 76), ('ALTURA_UTERINA', 22.0)) AS v(codigo, valor) ON TRUE
 JOIN tipo_medicion tm ON tm.codigo = v.codigo;
 
--- Medición registrada por la gestante, con valor alto (dispara la regla configurada abajo)
+-- Serie histórica registrada por la gestante (alimenta las gráficas de evolución)
+INSERT INTO medicion (embarazo_id, tipo_medicion_id, registrado_por, origen, valor, fecha_registro, semana_gestacion)
+SELECT e.id, tm.id, e.gestante_usuario_id, 'GESTANTE', v.valor,
+       (e.fecha_inicio + v.semana * 7)::TIMESTAMPTZ + TIME '08:00', v.semana
+FROM embarazo e
+CROSS JOIN (VALUES
+    ('PESO', 8, 62.0), ('PESO', 12, 63.1), ('PESO', 16, 64.5), ('PESO', 19, 66.2),
+    ('PA_SISTOLICA', 8, 110), ('PA_SISTOLICA', 12, 112), ('PA_SISTOLICA', 16, 115), ('PA_SISTOLICA', 19, 117),
+    ('PA_DIASTOLICA', 8, 70), ('PA_DIASTOLICA', 12, 72), ('PA_DIASTOLICA', 16, 74), ('PA_DIASTOLICA', 19, 75)
+) AS v(codigo, semana, valor)
+JOIN tipo_medicion tm ON tm.codigo = v.codigo
+WHERE e.estado = 'ACTIVO';
+
+-- Medición registrada por la gestante, con valor alto (dispara la regla PAS_ELEVADA)
 INSERT INTO medicion (embarazo_id, tipo_medicion_id, registrado_por, origen, valor)
 SELECT e.id, (SELECT id FROM tipo_medicion WHERE codigo = 'PA_SISTOLICA'),
        e.gestante_usuario_id, 'GESTANTE', 152
@@ -70,12 +83,7 @@ SELECT e.id, (SELECT id FROM tipo_examen WHERE codigo = 'HEMOGRAMA'),
 FROM embarazo e LIMIT 1;
 
 -- 9. Reglas de alerta (RF-11)
-INSERT INTO regla_alerta (tipo_medicion_id, codigo, operador, valor_referencia, severidad, mensaje, creada_por)
-SELECT tm.id, 'PAS_ALTA', 'MAYOR_IGUAL', 140, 'CRITICA',
-       'Se ha registrado una presión sistólica por encima del rango configurado.',
-       (SELECT id FROM usuario WHERE rol_id = 3 LIMIT 1)
-FROM tipo_medicion tm WHERE tm.codigo = 'PA_SISTOLICA';
-
+--    Las reglas clínicas base (PAS/PAD, FCF, glucosa, temperatura) ya vienen de la migración 002.
 INSERT INTO regla_alerta (tipo_medicion_id, codigo, operador, valor_min, valor_max, severidad, mensaje, creada_por)
 SELECT tm.id, 'PESO_FUERA_RANGO', 'FUERA_DE_RANGO', 45, 110, 'ADVERTENCIA',
        'El peso registrado está fuera del rango configurado.',
@@ -86,7 +94,7 @@ FROM tipo_medicion tm WHERE tm.codigo = 'PESO';
 INSERT INTO alerta (embarazo_id, regla_alerta_id, medicion_id, severidad, mensaje, valor_detectado)
 SELECT m.embarazo_id, r.id, m.id, r.severidad, r.mensaje, m.valor
 FROM medicion m
-JOIN regla_alerta r ON r.tipo_medicion_id = m.tipo_medicion_id AND r.codigo = 'PAS_ALTA'
+JOIN regla_alerta r ON r.tipo_medicion_id = m.tipo_medicion_id AND r.codigo = 'PAS_ELEVADA'
 WHERE m.origen = 'GESTANTE' AND m.valor >= r.valor_referencia;
 
 -- 11. Contenido educativo (RF-16) y auditoría (RNF-14)

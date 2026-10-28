@@ -525,13 +525,12 @@ Las funcionalidades adicionales pueden desarrollarse posteriormente.
 
 ### Frontend
 
-* React
-* Vite
+* Next.js
 * Tailwind CSS
 
 ### Backend
 
-* FastAPI o Spring Boot
+* Express.js
 
 ### Base de datos
 
@@ -539,11 +538,11 @@ Las funcionalidades adicionales pueden desarrollarse posteriormente.
 
 ### Autenticación
 
-* JWT o Supabase Auth
+* JWT
 
 ### Visualización
 
-* Chart.js, Recharts o similar
+* Chart.js
 
 ---
 

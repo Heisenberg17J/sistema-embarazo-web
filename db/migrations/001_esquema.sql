@@ -4,7 +4,7 @@
 --  Esquema: seguimiento_embarazo
 --  Autor: Jean Angelo Caicedo Rojas, Hejembert Fabian Jaramillo Betancur
 -- =============================================================================
---  Ejecución:  psql -U postgres -d seguimiento_embarazo -f 01_esquema.sql
+--  Ejecución:  psql -U postgres -d seguimiento_embarazo -f 001_esquema.sql
 -- =============================================================================
 
 -- CREATE DATABASE seguimiento_embarazo
