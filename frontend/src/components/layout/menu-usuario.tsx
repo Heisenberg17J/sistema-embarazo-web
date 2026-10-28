@@ -2,6 +2,7 @@
 
 import * as Menu from "@radix-ui/react-dropdown-menu";
 import Link from "next/link";
+import { useFormStatus } from "react-dom";
 import { ChevronDown, LogOut } from "lucide-react";
 import { cerrarSesion } from "@/acciones/auth";
 import { NAVEGACION, ROL_TEXTO } from "@/lib/navegacion";
@@ -67,18 +68,33 @@ export function MenuUsuario({
                     <Menu.Separator className="my-1 h-px bg-border-firme" />
 
                     <form action={cerrarSesion}>
-                        <Menu.Item asChild>
-                            <button
-                                type="submit"
-                                className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-critica outline-none data-highlighted:bg-critica-suave"
-                            >
-                                <LogOut className="size-4" aria-hidden />
-                                Cerrar sesión
-                            </button>
-                        </Menu.Item>
+                        <ItemCerrarSesion />
                     </form>
                 </Menu.Content>
             </Menu.Portal>
         </Menu.Root>
+    );
+}
+
+/**
+ * Al elegir un elemento, Radix cierra el menú y desmonta su contenido en el
+ * mismo evento del clic, antes de que el navegador envíe el formulario: el
+ * envío se cancelaba y la sesión seguía abierta. Por eso aquí se evita el
+ * cierre y el menú queda abierto, con el estado de espera, hasta que la acción
+ * redirige al login.
+ */
+function ItemCerrarSesion() {
+    const { pending } = useFormStatus();
+    return (
+        <Menu.Item asChild onSelect={(evento) => evento.preventDefault()}>
+            <button
+                type="submit"
+                disabled={pending}
+                className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-critica outline-none data-highlighted:bg-critica-suave disabled:cursor-wait disabled:opacity-70"
+            >
+                <LogOut className="size-4" aria-hidden />
+                {pending ? "Cerrando sesión…" : "Cerrar sesión"}
+            </button>
+        </Menu.Item>
     );
 }

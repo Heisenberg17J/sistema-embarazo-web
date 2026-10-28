@@ -23,7 +23,7 @@ npm run dev                                                     # puerto 3000
 | `npm run dev` | Servidor de desarrollo en el puerto 3000 |
 | `npm run build` / `npm start` | Compila y sirve la versión de producción |
 | `npm run typecheck` | Comprueba los tipos |
-| `npm run test:e2e` | 22 pruebas de extremo a extremo (Playwright), en escritorio y móvil |
+| `npm run test:e2e` | 33 pruebas de extremo a extremo (Playwright), en escritorio y móvil |
 | `npm run lint` | ESLint |
 
 Las pruebas necesitan la API en el puerto 4000 con los datos de `db/seeds.sql`, y conviene arrancarla con `NODE_ENV=test` para que no aplique el límite de intentos de inicio de sesión. **Registran datos reales: no las ejecute contra una base con información de verdad.**
@@ -75,12 +75,13 @@ src/
     (publico)/      login, registro
     (privado)/      layout con sesión + todas las pantallas con marco de app
     cambiar-contrasena/   fuera de (privado): es la salida del bloqueo por contraseña temporal
-  acciones/         Server Actions: auth, registros (medición/síntoma), embarazo
+  acciones/         Server Actions: auth, registros (medición/síntoma), embarazo, profesional, admin
   components/
     ui/             boton, tarjeta, campo, dialogo, insignia, vacio…
     layout/         encabezado, navegación por rol, pie con el descargo
     paneles/        anillo de gestación, alertas, mini evolución, aviso crítico
     formularios/    diálogos de medición y síntoma
+    admin/          formularios del administrador y diálogo de confirmación
   lib/              api, datos, sesión, formato, severidad, umbrales, marca
 e2e/                pruebas de extremo a extremo y generador de capturas
 ```
@@ -92,14 +93,18 @@ e2e/                pruebas de extremo a extremo y generador de capturas
 | Público | Login, registro de gestante, cambio de contraseña | — |
 | Gestante | **Completo**: panel, registrar embarazo, citas, evolución, síntomas, exámenes, historial, alertas, aprendizaje y su detalle, perfil, menú "Más", aviso de atención inmediata | — |
 | Profesional | **Completo**: panel, pacientes, ficha con pestañas, agenda, bandeja de alertas, registro de controles, exámenes y citas | — |
-| Administrador | — | Estadísticas, usuarios, asignaciones, catálogos, reglas, contenido, auditoría, configuración |
+| Administrador | **Completo**: estadísticas, usuarios y su ficha (crear, editar, desactivar, restablecer contraseña), asignaciones, contenido educativo, catálogos, reglas de alerta, auditoría y configuración | — |
 
-Las pantallas pendientes existen como marcadores navegables que enumeran lo que va a contener cada una, para que la navegación funcione mientras se construyen.
+El administrador solo ve cifras agregadas y datos de cuenta: ninguna pantalla suya muestra información clínica de una gestante (RNF-03).
 
-## Dos cosas que conviene saber al tocar este código
+Los parámetros de **Configuración** se guardan y quedan en la auditoría, pero el backend todavía no los lee: cambiarlos no altera el comportamiento del sistema.
+
+## Lo que conviene saber al tocar este código
 
 **Las Server Actions no llaman a `revalidatePath`.** Hacerlo desde dentro de una acción remonta el componente que la invocó y borra su estado: el aviso de atención inmediata y los mensajes de confirmación nunca llegaban a verse. En su lugar, el cliente pide `router.refresh()` cuando ya mostró el resultado. Como el cliente de la API usa `no-store`, no hay caché de servidor que invalidar.
 
 **Los `<select>` de los formularios se controlan con estado.** React 19 restablece el formulario al terminar una acción: los `<input>` se repintan desde `valores`, pero un `<select>` no controlado vuelve a su opción inicial, así que tras un error se perdía lo elegido.
 
 **Los filtros llevan un valor explícito en la URL** (`?tipo=todos` en lugar de quitar el parámetro) y las listas filtrables suspenden solo la lista, no la página entera. Con `loading.tsx` a nivel de ruta, cambiar de filtro desmontaba la barra de filtros y se perdía la pulsación siguiente.
+
+**Las listas del administrador no van dentro de un `<Suspense>`, y sus acciones de un paso sí revalidan.** Con la lista suspendida, una acción que la revalidaba o refrescaba a veces se quedaba en "Guardando…" aunque el servidor ya hubiera respondido (la base sí cambiaba). Por eso desactivar, finalizar, publicar o guardar un parámetro llaman a `revalidatePath` y los datos frescos llegan en la misma respuesta; los diálogos que muestran un resultado (crear un usuario, una asignación, un contenido…) siguen refrescando al cerrarse. Las listas de la gestante y del profesional todavía usan `<Suspense>` y la prueba "revisar una alerta" falla a veces por esta misma causa.

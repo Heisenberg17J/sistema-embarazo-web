@@ -17,6 +17,17 @@ test.describe("Sesión y control de acceso", () => {
         await expect(page).toHaveURL(/\/admin$/);
     });
 
+    test("se cierra la sesión desde el menú del encabezado", async ({ page }) => {
+        await entrar(page, USUARIOS.admin);
+        await page.getByRole("button", { name: /^Menú de / }).click();
+        await page.getByRole("menuitem", { name: "Cerrar sesión" }).click();
+        await expect(page).toHaveURL(/\/login$/);
+
+        // La sesión quedó cerrada de verdad: lo privado vuelve a pedir acceso.
+        await page.goto("/admin");
+        await expect(page).toHaveURL(/\/login/);
+    });
+
     test("una ruta protegida sin sesión manda al login y vuelve al destino", async ({
         page,
     }) => {

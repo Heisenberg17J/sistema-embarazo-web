@@ -62,6 +62,39 @@ test.describe("Capturas de pantalla", () => {
         });
     }
 
+    // Una captura por pantalla del administrador.
+    for (const [ruta, nombre] of [
+        ["/admin", "admin-estadisticas"],
+        ["/admin/usuarios", "admin-usuarios"],
+        ["/admin/usuarios/4", "admin-usuario"],
+        ["/admin/asignaciones", "admin-asignaciones"],
+        ["/admin/contenido", "admin-contenido"],
+        ["/admin/catalogos?seccion=tipos-sintoma", "admin-catalogos"],
+        ["/admin/reglas-alerta", "admin-reglas"],
+        ["/admin/auditoria", "admin-auditoria"],
+        ["/admin/configuracion", "admin-configuracion"],
+    ] as const) {
+        test(`pantalla ${nombre}`, async ({ page }, info) => {
+            await entrar(page, USUARIOS.admin);
+            await page.goto(ruta);
+            await page.getByRole("heading", { level: 1 }).waitFor();
+            await page.screenshot({
+                path: `e2e/capturas/${nombre}-${info.project.name}.png`,
+                fullPage: true,
+            });
+        });
+    }
+
+    test("crear usuario", async ({ page }, info) => {
+        await entrar(page, USUARIOS.admin);
+        await page.goto("/admin/usuarios");
+        await page.getByRole("button", { name: "Crear usuario" }).click();
+        await page.getByRole("dialog").waitFor();
+        await page.screenshot({
+            path: `e2e/capturas/admin-crear-usuario-${info.project.name}.png`,
+        });
+    });
+
     test("inicio de sesión", async ({ page }, info) => {
         await page.goto("/login");
         await page.screenshot({
