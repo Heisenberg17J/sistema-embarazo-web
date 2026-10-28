@@ -39,7 +39,7 @@ const resumenEmbarazo = async (db, embarazoId) => {
             categoria_imc: rango.categoria,
             ganancia_recomendada_kg: { min: rango.min, max: rango.max },
             ganancia_actual_kg: e.ultimo_peso_kg != null ? redondear(e.ultimo_peso_kg - e.peso_pregestacional_kg) : null,
-            nota: 'Referencia orientativa; su profesional de salud define la meta individual.'
+            nota: 'Referencia orientativa; tu profesional de salud define la meta individual.'
         };
     }
     return e;

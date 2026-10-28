@@ -13,7 +13,7 @@ const esquemaCrear = z.object({
     intensidad: z.number().int().min(1, 'Intensidad de 1 a 5').max(5, 'Intensidad de 1 a 5').optional().nullable(),
     fecha: noFutura(fecha).optional(),
     observaciones: textoOpcional(2000)
-}).refine((d) => d.tipo || d.descripcion, { message: 'Indique el tipo de síntoma o una descripción', path: ['descripcion'] });
+}).refine((d) => d.tipo || d.descripcion, { message: 'Elige un síntoma de la lista o descríbelo', path: ['descripcion'] });
 
 router.get('/', validar({ query: paginacion }), manejar(ctrl.listar));
 router.post('/', permitir(ROLES.GESTANTE), validar({ body: esquemaCrear }), manejar(ctrl.crear));

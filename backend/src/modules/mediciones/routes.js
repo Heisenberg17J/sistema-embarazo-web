@@ -8,7 +8,7 @@ const { medicionItem } = require('./esquemas');
 const router = express.Router();
 
 const esquemaCrear = z.object({
-    mediciones: z.array(medicionItem).min(1, 'Envíe al menos una medición').max(10),
+    mediciones: z.array(medicionItem).min(1, 'Debe incluir al menos una medición').max(10),
     fecha_registro: z.string().datetime({ offset: true, message: 'Fecha y hora ISO 8601 inválida' })
         .refine((v) => new Date(v).getTime() <= Date.now() + 5 * 60000, 'La fecha no puede ser futura')
         .optional(),
@@ -16,7 +16,7 @@ const esquemaCrear = z.object({
 });
 
 const esquemaSerie = z.object({
-    tipos: z.string().trim().min(1, 'Indique uno o más tipos separados por coma')
+    tipos: z.string().trim().min(1, 'Falta indicar uno o más tipos separados por coma')
         .transform((v) => v.split(',').map((t) => t.trim().toUpperCase()).filter(Boolean))
 });
 

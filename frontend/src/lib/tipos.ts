@@ -1,0 +1,274 @@
+/** Tipos de la API (`backend/src`). Reflejan lo que devuelve cada endpoint. */
+
+export type Rol = "GESTANTE" | "PROFESIONAL" | "ADMINISTRADOR";
+export type Severidad = "INFORMATIVA" | "ADVERTENCIA" | "CRITICA";
+export type EstadoAlerta = "PENDIENTE" | "REVISADA" | "DESCARTADA";
+export type EstadoEmbarazo = "ACTIVO" | "FINALIZADO" | "CANCELADO";
+export type EstadoCita =
+    | "PROGRAMADA"
+    | "REPROGRAMADA"
+    | "CUMPLIDA"
+    | "CANCELADA"
+    | "NO_ASISTIO";
+export type OrigenMedicion = "GESTANTE" | "PROFESIONAL";
+
+export interface PerfilGestante {
+    tipo_documento: string;
+    numero_documento: string;
+    fecha_nacimiento: string;
+    telefono: string | null;
+    direccion: string | null;
+    eps: string | null;
+    grupo_sanguineo: string | null;
+    contacto_emergencia_nombre: string | null;
+    contacto_emergencia_telefono: string | null;
+}
+
+export interface PerfilProfesional {
+    registro_profesional: string;
+    especialidad: string;
+    institucion: string | null;
+    telefono: string | null;
+}
+
+export interface Usuario {
+    id: number;
+    rol: Rol;
+    nombre: string;
+    apellido: string;
+    correo: string;
+    activo: boolean;
+    debe_cambiar_contrasena: boolean;
+    ultimo_acceso: string | null;
+    creado_en: string;
+    perfil?: PerfilGestante | PerfilProfesional | null;
+}
+
+export interface Embarazo {
+    embarazo_id: number;
+    gestante_usuario_id: number;
+    gestante: string;
+    fecha_inicio: string;
+    fecha_estimada_parto: string;
+    estado: EstadoEmbarazo;
+    semana_actual: number | null;
+    edad_gestacional: string | null;
+    trimestre: number | null;
+    dias_para_parto: number | null;
+    talla_cm: number | null;
+    peso_pregestacional_kg: number | null;
+    fecha_finalizacion: string | null;
+    observaciones: string | null;
+    ultimo_peso_kg: number | null;
+    peso: {
+        imc_pregestacional: number;
+        categoria_imc: string;
+        ganancia_recomendada_kg: { min: number; max: number };
+        ganancia_actual_kg: number | null;
+        nota: string;
+    } | null;
+}
+
+export interface Alerta {
+    id: number;
+    embarazo_id: number;
+    gestante_usuario_id?: number;
+    gestante?: string;
+    severidad: Severidad;
+    mensaje: string;
+    valor_detectado: number | null;
+    tipo_medicion?: string | null;
+    unidad?: string | null;
+    tipo_sintoma?: string | null;
+    regla?: string | null;
+    estado: EstadoAlerta;
+    generada_en: string;
+    revisada_por: number | null;
+    revisor?: string | null;
+    fecha_revision: string | null;
+    observacion_revision: string | null;
+    accion_inmediata: boolean;
+    aviso?: string;
+}
+
+export interface Cita {
+    id: number;
+    embarazo_id: number;
+    fecha: string;
+    hora: string;
+    duracion_min: number;
+    estado: EstadoCita;
+    motivo_cancelacion: string | null;
+    tipo_control: string;
+    tipo_control_nombre: string;
+    profesional_usuario_id: number;
+    profesional: string;
+    gestante_usuario_id: number;
+    gestante: string;
+}
+
+export interface Medicion {
+    id: number;
+    tipo: string;
+    nombre: string;
+    unidad: string;
+    valor: number;
+    fecha_registro: string;
+    semana_gestacion: number | null;
+    origen: OrigenMedicion;
+    control_id: number | null;
+    observaciones: string | null;
+}
+
+export interface SerieMediciones {
+    embarazo_id: number;
+    fecha_inicio: string;
+    series: {
+        tipo: string;
+        nombre: string;
+        unidad: string;
+        puntos: {
+            fecha: string;
+            semana: number | null;
+            valor: number;
+            origen: OrigenMedicion;
+        }[];
+        referencias: {
+            codigo: string;
+            operador: string;
+            valor_referencia: number | null;
+            valor_min: number | null;
+            valor_max: number | null;
+            severidad: Severidad;
+        }[];
+    }[];
+}
+
+export interface Sintoma {
+    id: number;
+    embarazo_id: number;
+    tipo: string | null;
+    tipo_nombre?: string | null;
+    es_signo_alarma?: boolean;
+    descripcion: string;
+    intensidad: number | null;
+    fecha: string;
+    semana_gestacion: number | null;
+    observaciones: string | null;
+    registrado_en: string;
+    alerta_id?: number | null;
+    alerta_severidad?: Severidad | null;
+    alerta_estado?: EstadoAlerta | null;
+    alerta?: Alerta | null;
+}
+
+export interface Examen {
+    id: number;
+    embarazo_id: number;
+    tipo: string;
+    tipo_nombre: string;
+    fecha: string;
+    resultado: string;
+    observaciones: string | null;
+    registrado_en: string;
+    profesional: string;
+}
+
+export interface Control {
+    id: number;
+    embarazo_id: number;
+    cita_id: number | null;
+    fecha: string;
+    semana_gestacion: number;
+    observaciones: string | null;
+    creado_en: string;
+    profesional: string;
+    mediciones: { tipo: string; nombre: string; valor: number; unidad: string }[];
+    alertas?: Alerta[];
+}
+
+export interface EventoHistorial {
+    embarazo_id: number;
+    tipo: "CONTROL" | "SINTOMA" | "EXAMEN" | "CITA" | "ALERTA";
+    registro_id: number;
+    fecha: string;
+    titulo: string;
+    detalle: string | null;
+    estado: string | null;
+}
+
+export interface Paciente {
+    profesional_usuario_id: number;
+    gestante_usuario_id: number;
+    gestante: string;
+    correo: string;
+    telefono: string | null;
+    embarazo_id: number | null;
+    fecha_estimada_parto: string | null;
+    semana_actual: number | null;
+    edad_gestacional: string | null;
+    alertas_pendientes: number;
+    alertas_criticas: number;
+    proxima_cita: string | null;
+}
+
+export interface Contenido {
+    id: number;
+    titulo: string;
+    cuerpo: string;
+    categoria: string | null;
+    semana_desde: number;
+    semana_hasta: number;
+    publicado: boolean;
+    leido?: boolean;
+}
+
+export interface TipoMedicion {
+    id: number;
+    codigo: string;
+    nombre: string;
+    unidad: string;
+    valor_min: number;
+    valor_max: number;
+    decimales: number;
+    registrable_por_gestante: boolean;
+    activo: boolean;
+}
+
+export interface TipoSintoma {
+    id: number;
+    codigo: string;
+    nombre: string;
+    es_signo_alarma: boolean;
+    severidad: Severidad | null;
+    mensaje_alarma: string | null;
+    alarma_hasta_semana: number | null;
+    activo: boolean;
+}
+
+export interface Pagina<T> {
+    datos: T[];
+    paginacion: { page: number; limit: number; total: number; paginas: number };
+    aviso?: string;
+}
+
+/** Panel de la gestante: `GET /dashboard` con rol GESTANTE. */
+export interface PanelGestante {
+    rol: "GESTANTE";
+    embarazo: Embarazo | null;
+    mensaje?: string;
+    proxima_cita: Pick<
+        Cita,
+        "id" | "fecha" | "hora" | "estado" | "profesional"
+    > & { tipo_control: string } | null;
+    alertas_pendientes: Pick<
+        Alerta,
+        "id" | "severidad" | "mensaje" | "generada_en" | "accion_inmediata"
+    >[];
+    ultimas_mediciones: Pick<
+        Medicion,
+        "tipo" | "nombre" | "unidad" | "valor" | "fecha_registro"
+    >[];
+    contenido_semana: Pick<Contenido, "id" | "titulo" | "categoria" | "leido">[];
+    aviso: string;
+}

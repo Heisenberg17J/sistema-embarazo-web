@@ -1,0 +1,13 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno: nunca se suben, solo los .env.example
+.env
+.env.*
+!.env.example
+
+# Salidas de compilación y pruebas
+.next/
+coverage/
+playwright-report/
+test-results/

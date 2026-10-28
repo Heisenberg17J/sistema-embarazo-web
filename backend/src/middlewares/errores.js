@@ -23,7 +23,7 @@ const MENSAJES_RESTRICCION = {
     ck_examen_fecha: 'La fecha del examen no puede ser futura',
     ck_gestante_nac: 'La fecha de nacimiento no es válida',
     ck_usuario_correo: 'El correo electrónico no es válido',
-    ck_cita_cancel: 'Para cancelar una cita debe indicar el motivo',
+    ck_cita_cancel: 'Para cancelar una cita hay que indicar el motivo',
     ck_regla_valores: 'Los valores de la regla no son coherentes con el operador'
 };
 

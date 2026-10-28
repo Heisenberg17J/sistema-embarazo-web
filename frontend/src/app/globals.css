@@ -1,0 +1,292 @@
+@import "tailwindcss";
+
+/* =============================================================================
+   Sistema de diseño · Seguimiento del Embarazo
+   Tokens tomados del mockup de referencia (Tailwind v4 + shadcn).
+   Los colores de TEXTO se oscurecieron respecto al mockup para cumplir
+   contraste AA 4.5:1 sobre las superficies de vidrio translúcidas.
+   ============================================================================= */
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+    /* Fondo degradado de la aplicación */
+    --fondo-app: linear-gradient(
+        160deg,
+        oklch(91% 0.035 255) 0%,
+        oklch(91% 0.035 350) 48%,
+        oklch(96% 0.018 90) 100%
+    );
+
+    --background: oklch(94% 0.02 265);
+    --foreground: oklch(30% 0.065 266);
+
+    /* Superficies de vidrio: blanco translúcido sobre el degradado */
+    --card: oklch(100% 0 0 / 0.62);
+    --card-foreground: oklch(30% 0.065 266);
+    --popover: oklch(99% 0.008 265);
+    --popover-foreground: oklch(30% 0.065 266);
+    --surface-soft: oklch(100% 0 0 / 0.42);
+    --surface-strong: oklch(100% 0 0 / 0.74);
+
+    /* Marca: periwinkle suave */
+    --brand: oklch(65% 0.09 265);
+    --brand-deep: oklch(46% 0.12 266);
+    --primary: oklch(55% 0.11 265);
+    --primary-foreground: oklch(99% 0.004 265);
+
+    /* Rosa suave para acentos decorativos */
+    --secondary: oklch(91% 0.035 350);
+    --secondary-foreground: oklch(30% 0.065 266);
+
+    --muted: oklch(96% 0.012 265 / 0.65);
+    --muted-foreground: oklch(46% 0.05 266);
+
+    --accent: oklch(91% 0.035 350);
+    --accent-foreground: oklch(30% 0.065 266);
+
+    /* Escala de severidad de alertas (RF-11).
+       El mockup solo trae un color; el backend devuelve tres severidades. */
+    --critica: oklch(52% 0.17 20);
+    --critica-suave: oklch(92% 0.04 20 / 0.75);
+    --critica-borde: oklch(63% 0.17 20);
+    --advertencia: oklch(48% 0.1 70);
+    --advertencia-suave: oklch(93% 0.05 80 / 0.75);
+    --advertencia-borde: oklch(72% 0.12 75);
+    --informativa: oklch(46% 0.12 266);
+    --informativa-suave: oklch(93% 0.03 265 / 0.75);
+    --informativa-borde: oklch(65% 0.09 265);
+
+    --exito: oklch(45% 0.1 155);
+    --exito-suave: oklch(93% 0.04 155 / 0.75);
+
+    --destructive: oklch(52% 0.17 20);
+    --destructive-foreground: oklch(99% 0.004 265);
+
+    --border: oklch(100% 0 0 / 0.7);
+    --border-firme: oklch(78% 0.025 265);
+    --input: oklch(100% 0 0 / 0.72);
+    --ring: oklch(55% 0.11 265);
+
+    --radius: 1.25rem;
+    --sombra-suave: 0 14px 36px -22px color-mix(in oklab, oklch(30% 0.065 266) 38%, transparent);
+    --sombra-elevada: 0 24px 60px -28px color-mix(in oklab, oklch(30% 0.065 266) 45%, transparent);
+}
+
+.dark {
+    --fondo-app: linear-gradient(
+        160deg,
+        oklch(21% 0.04 266) 0%,
+        oklch(19% 0.035 320) 55%,
+        oklch(17% 0.03 90) 100%
+    );
+
+    --background: oklch(16% 0.035 265);
+    --foreground: oklch(97% 0.004 248);
+
+    --card: oklch(100% 0 0 / 0.07);
+    --card-foreground: oklch(97% 0.004 248);
+    --popover: oklch(22% 0.038 266);
+    --popover-foreground: oklch(97% 0.004 248);
+    --surface-soft: oklch(100% 0 0 / 0.05);
+    --surface-strong: oklch(100% 0 0 / 0.11);
+
+    --brand: oklch(76% 0.08 265);
+    --brand-deep: oklch(84% 0.06 265);
+    --primary: oklch(76% 0.08 265);
+    --primary-foreground: oklch(20% 0.04 266);
+
+    --secondary: oklch(32% 0.045 330);
+    --secondary-foreground: oklch(97% 0.004 248);
+
+    --muted: oklch(100% 0 0 / 0.06);
+    --muted-foreground: oklch(78% 0.025 265);
+
+    --accent: oklch(32% 0.045 330);
+    --accent-foreground: oklch(97% 0.004 248);
+
+    --critica: oklch(80% 0.13 20);
+    --critica-suave: oklch(45% 0.13 20 / 0.35);
+    --critica-borde: oklch(70% 0.16 20);
+    --advertencia: oklch(84% 0.11 80);
+    --advertencia-suave: oklch(45% 0.09 75 / 0.32);
+    --advertencia-borde: oklch(75% 0.12 75);
+    --informativa: oklch(84% 0.06 265);
+    --informativa-suave: oklch(45% 0.07 265 / 0.3);
+    --informativa-borde: oklch(70% 0.08 265);
+
+    --exito: oklch(80% 0.1 155);
+    --exito-suave: oklch(42% 0.08 155 / 0.32);
+
+    --destructive: oklch(70% 0.16 22);
+    --destructive-foreground: oklch(20% 0.04 266);
+
+    --border: oklch(100% 0 0 / 0.14);
+    --border-firme: oklch(100% 0 0 / 0.26);
+    --input: oklch(100% 0 0 / 0.1);
+    --ring: oklch(76% 0.08 265);
+
+    --sombra-suave: 0 14px 36px -22px oklch(0% 0 0 / 0.6);
+    --sombra-elevada: 0 24px 60px -28px oklch(0% 0 0 / 0.7);
+}
+
+/* Mapea los tokens a utilidades de Tailwind (bg-brand, text-muted-foreground, …).
+   "inline" hace que las utilidades apunten a la variable, no a su valor, para
+   que el tema oscuro funcione sin regenerar clases. */
+@theme inline {
+    --font-sans: var(--fuente-inter), ui-sans-serif, system-ui, sans-serif;
+    --font-display: var(--fuente-fraunces), ui-serif, Georgia, serif;
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-surface-soft: var(--surface-soft);
+    --color-surface-strong: var(--surface-strong);
+
+    --color-brand: var(--brand);
+    --color-brand-deep: var(--brand-deep);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-critica: var(--critica);
+    --color-critica-suave: var(--critica-suave);
+    --color-critica-borde: var(--critica-borde);
+    --color-advertencia: var(--advertencia);
+    --color-advertencia-suave: var(--advertencia-suave);
+    --color-advertencia-borde: var(--advertencia-borde);
+    --color-informativa: var(--informativa);
+    --color-informativa-suave: var(--informativa-suave);
+    --color-informativa-borde: var(--informativa-borde);
+    --color-exito: var(--exito);
+    --color-exito-suave: var(--exito-suave);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-border-firme: var(--border-firme);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --radius-2xl: 1rem;
+    --radius-3xl: 1.5rem;
+    --shadow-suave: var(--sombra-suave);
+    --shadow-elevada: var(--sombra-elevada);
+}
+
+@layer base {
+    * {
+        border-color: var(--border);
+    }
+
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        background-color: var(--background);
+        color: var(--foreground);
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* Foco siempre visible: la app se debe poder recorrer con teclado (RNF-07). */
+    :focus-visible {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
+    }
+
+    /* El navegador no debe acercar al enfocar un campo en iOS. */
+    input,
+    select,
+    textarea,
+    button {
+        font: inherit;
+    }
+}
+
+@layer components {
+    .app-backdrop {
+        /* El color de fondo cubre lo que el degradado fijo deja fuera al
+           desplazarse; sin él, debajo de la ventana se veía blanco. */
+        background-color: var(--background);
+        background-image: var(--fondo-app);
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+    }
+
+    /* Tarjeta de vidrio principal */
+    .glass {
+        background: var(--card);
+        border: 1px solid var(--border);
+        box-shadow: var(--sombra-suave);
+        backdrop-filter: blur(22px) saturate(140%);
+        -webkit-backdrop-filter: blur(22px) saturate(140%);
+    }
+
+    /* Subtarjeta dentro de una .glass */
+    .glass-soft {
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+    }
+
+    /* Área táctil mínima de 44px para manos con prisa o malestar. */
+    .toque {
+        min-height: 2.75rem;
+        min-width: 2.75rem;
+    }
+}
+
+/* Quien pide menos transparencia recibe superficies opacas y legibles. */
+@media (prefers-reduced-transparency: reduce) {
+    .glass,
+    .glass-soft {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        background: color-mix(in oklab, var(--background) 25%, white);
+        border-color: var(--border-firme);
+    }
+
+    .dark .glass,
+    .dark .glass-soft {
+        background: color-mix(in oklab, var(--background) 70%, white);
+    }
+
+    .app-backdrop {
+        background: var(--background);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+@media print {
+    .app-backdrop {
+        background: white;
+    }
+
+    .glass,
+    .glass-soft {
+        background: white;
+        box-shadow: none;
+        backdrop-filter: none;
+    }
+}

@@ -5,7 +5,7 @@
 ## Estado actual
 
 - **Código:** [`backend/`](backend/README.md), con Node.js 20, Express, PostgreSQL 16 y JWT.
-- **Base de datos:** [`db/migrations/`](db/migrations) (`001_esquema.sql` y `002_signos_alarma.sql`), con datos de prueba en [`db/seeds.sql`](db/seeds.sql) y documentación en [`db/MODELO.md`](db/MODELO.md).
+- **Base de datos:** [`db/migrations/`](db/migrations) (`001_esquema.sql`, `002_signos_alarma.sql` y `003_tuteo.sql`), con datos de prueba en [`db/seeds.sql`](db/seeds.sql) y documentación en [`db/MODELO.md`](db/MODELO.md).
 - **URL base local:** `http://localhost:4000/api/v1`. El puerto 3000 queda libre para el frontend Next.js.
 - **Pruebas:** `cd backend && npm test`, 40 pruebas de integración contra PostgreSQL.
 

@@ -8,7 +8,7 @@ const { z, fecha, texto, textoOpcional, paginacion, noFutura } = require('../../
 const router = express.Router();
 
 const esquemaCrear = z.object({
-    tipo: z.string().trim().toUpperCase().min(1, 'Indique el tipo de examen'),
+    tipo: z.string().trim().toUpperCase().min(1, 'Elige el tipo de examen'),
     fecha: noFutura(fecha),
     resultado: texto(4000),
     observaciones: textoOpcional(4000)

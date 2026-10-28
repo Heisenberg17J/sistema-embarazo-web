@@ -114,7 +114,7 @@ const reprogramar = async (req, res) => {
 const cambiarEstado = async (req, res) => {
     const { estado, motivo_cancelacion: motivo } = req.body;
     if (req.usuario.rol === ROLES.GESTANTE && estado !== 'CANCELADA') throw prohibido('La gestante solo puede cancelar sus citas');
-    if (estado === 'CANCELADA' && !motivo) throw new HttpError(400, 'Indique el motivo de la cancelación');
+    if (estado === 'CANCELADA' && !motivo) throw new HttpError(400, 'Falta el motivo de la cancelación');
 
     const cita = await transaccion(async (db) => {
         const actual = await citaPropia(db, req);

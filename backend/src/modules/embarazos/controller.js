@@ -30,7 +30,7 @@ const crear = async (req, res) => {
     const { gestante_id: gestanteIdBody, fecha_inicio: fum, fecha_estimada_parto: fpp, ...resto } = req.body;
     const gestanteId = await gestanteObjetivo(req, gestanteIdBody);
     if (diasDesde(fum) > DIAS_MAX_FUM) {
-        throw new HttpError(422, 'La fecha de última menstruación indica más de 44 semanas; verifique la fecha');
+        throw new HttpError(422, 'La fecha de última menstruación indica más de 44 semanas; revisa la fecha');
     }
 
     const resumen = await transaccion(async (db) => {

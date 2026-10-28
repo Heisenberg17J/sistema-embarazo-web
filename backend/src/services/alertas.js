@@ -51,7 +51,7 @@ const evaluarSintoma = async (db, sintoma, tipo, semana) => {
         mensaje = tipo.mensaje_alarma;
     } else if (sintoma.intensidad >= INTENSIDAD_ALTA) {
         severidad = 'ADVERTENCIA';
-        mensaje = 'Se registró un síntoma de intensidad alta: consulte con su profesional de salud.';
+        mensaje = 'Se registró un síntoma de intensidad alta: consulta con tu profesional de salud.';
     } else {
         return null;
     }

@@ -6,7 +6,7 @@ const { validar } = require('../../middlewares/validar');
 const { manejar } = require('../../utils/http');
 const { z, idParam, fecha, hora, paginacion } = require('../../utils/esquemas');
 
-const tipoControl = z.string().trim().toUpperCase().min(1, 'Indique el tipo de control');
+const tipoControl = z.string().trim().toUpperCase().min(1, 'Elige el tipo de control');
 const duracion = z.number().int().min(5, 'Duración mínima 5 minutos').max(240, 'Duración máxima 240 minutos');
 const ESTADOS = ['PROGRAMADA', 'REPROGRAMADA', 'CUMPLIDA', 'CANCELADA', 'NO_ASISTIO'];
 
@@ -31,7 +31,7 @@ router.get('/', validar({
 router.patch('/:id', permitir(ROLES.PROFESIONAL), validar({
     params: idParam(),
     body: z.object({ fecha: fecha.optional(), hora: hora.optional(), tipo_control: tipoControl.optional(), duracion_min: duracion.optional() })
-        .refine((d) => Object.keys(d).length > 0, 'Envíe al menos un campo para reprogramar')
+        .refine((d) => Object.keys(d).length > 0, 'Cambia al menos un campo para reprogramar')
 }), manejar(ctrl.reprogramar));
 router.patch('/:id/estado', validar({
     params: idParam(),

@@ -525,8 +525,9 @@ Las funcionalidades adicionales pueden desarrollarse posteriormente.
 
 ### Frontend
 
-* Next.js
-* Tailwind CSS
+* Next.js 15 (App Router) + React 19
+* Tailwind CSS v4
+* TypeScript
 
 ### Backend
 
@@ -542,7 +543,7 @@ Las funcionalidades adicionales pueden desarrollarse posteriormente.
 
 ### Visualización
 
-* Chart.js
+* Recharts
 
 ---
 
@@ -575,3 +576,20 @@ El objetivo principal es desarrollar una aplicación web funcional que permita d
 * Generación de alertas mediante reglas.
 * Auditoría básica de acciones.
 * Desarrollo de una interfaz orientada a diferentes tipos de usuarios.
+
+---
+
+## Estructura del repositorio
+
+| Carpeta | Qué contiene |
+|---|---|
+| [`db/`](db/MODELO.md) | Modelo de datos: migraciones numeradas y datos de prueba |
+| [`backend/`](backend/README.md) | API REST (Node.js + Express + PostgreSQL), RF-01 a RF-17 |
+| [`frontend/`](frontend/README.md) | Interfaz web (Next.js + Tailwind) |
+| `docker-compose.yml` | PostgreSQL para desarrollo |
+
+```bash
+docker compose up -d
+cd backend  && npm install && npm run db:reset && npm run dev   # API  :4000
+cd frontend && npm install && npm run dev                       # Web  :3000
+```

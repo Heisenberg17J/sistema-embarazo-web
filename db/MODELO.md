@@ -49,5 +49,6 @@ Todo cambio nuevo va en un archivo `00N_descripcion.sql`; nunca se editan las mi
 
 - `migrations/001_esquema.sql`: creación completa (tipos, tablas, restricciones, índices, triggers, vistas y catálogos iniciales).
 - `migrations/002_signos_alarma.sql`: signos de alarma, alertas desde síntomas, reglas clínicas base, datos antropométricos, contacto de emergencia y auditoría inmutable.
+- `migrations/003_tuteo.sql`: reescribe de "usted" a "tú" los mensajes que lee la gestante (signos de alarma y reglas de alerta), para que la app no mezcle los dos tratamientos. Solo cambia la redacción.
 - `seeds.sql`: datos de ejemplo opcionales (usuarios, embarazo, mediciones de varias semanas, alertas).
 - Para levantar PostgreSQL localmente, ver `docker-compose.yml` en la raíz.
