@@ -2,6 +2,9 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+/** `id` que llevan las tarjetas de lista para que la paginación vuelva a ellas. */
+export const ANCLA_LISTA = "lista";
+
 export interface DatosPaginacion {
     page: number;
     limit: number;
@@ -12,12 +15,17 @@ export interface DatosPaginacion {
 /**
  * Navegación entre páginas. Son enlaces normales que escriben en la URL, así
  * que funcionan sin JavaScript y la página se puede compartir o recargar.
+ *
+ * El enlace lleva `#ancla`: al cambiar de página se vuelve al comienzo de la
+ * lista, no al inicio de toda la pantalla. La pantalla pone ese `id` en la
+ * tarjeta que contiene la lista.
  */
 export function Paginacion({
     ruta,
     params,
     paginacion,
     etiqueta = "registros",
+    ancla = ANCLA_LISTA,
     className,
 }: {
     ruta: string;
@@ -25,6 +33,8 @@ export function Paginacion({
     params: Record<string, string | string[] | undefined>;
     paginacion: DatosPaginacion;
     etiqueta?: string;
+    /** `id` del elemento donde empieza la lista. */
+    ancla?: string;
     className?: string;
 }) {
     const { page, paginas, total, limit } = paginacion;
@@ -38,7 +48,7 @@ export function Paginacion({
         }
         if (destino > 1) sp.set("page", String(destino));
         const cadena = sp.toString();
-        return cadena ? `${ruta}?${cadena}` : ruta;
+        return `${cadena ? `${ruta}?${cadena}` : ruta}#${ancla}`;
     };
 
     const desde = (page - 1) * limit + 1;

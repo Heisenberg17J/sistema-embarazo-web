@@ -56,6 +56,8 @@ export function Pestanas({
                         <li key={p.valor}>
                             <Link
                                 href={href(p.valor)}
+                                // Se cambia de sección sin salir de la ficha: no se sube al inicio.
+                                scroll={false}
                                 aria-current={activa ? "page" : undefined}
                                 className={cn(
                                     "inline-flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors",

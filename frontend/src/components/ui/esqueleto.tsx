@@ -31,15 +31,3 @@ export function EsqueletoPagina({ filas = 3 }: { filas?: number }) {
         </div>
     );
 }
-
-/** Esqueleto de la lista de una pantalla con filtros, mientras llega el dato. */
-export function EsqueletoLista({ filas = 4 }: { filas?: number }) {
-    return (
-        <div className="mt-5 space-y-3" aria-busy="true" aria-live="polite">
-            <span className="sr-only">Cargando…</span>
-            {Array.from({ length: filas }).map((_, i) => (
-                <Esqueleto key={i} className="h-24 w-full" />
-            ))}
-        </div>
-    );
-}

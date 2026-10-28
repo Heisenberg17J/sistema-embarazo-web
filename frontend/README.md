@@ -23,7 +23,7 @@ npm run dev                                                     # puerto 3000
 | `npm run dev` | Servidor de desarrollo en el puerto 3000 |
 | `npm run build` / `npm start` | Compila y sirve la versión de producción |
 | `npm run typecheck` | Comprueba los tipos |
-| `npm run test:e2e` | 33 pruebas de extremo a extremo (Playwright), en escritorio y móvil |
+| `npm run test:e2e` | 38 pruebas de extremo a extremo (Playwright), en escritorio y móvil |
 | `npm run lint` | ESLint |
 
 Las pruebas necesitan la API en el puerto 4000 con los datos de `db/seeds.sql`, y conviene arrancarla con `NODE_ENV=test` para que no aplique el límite de intentos de inicio de sesión. **Registran datos reales: no las ejecute contra una base con información de verdad.**
@@ -101,10 +101,12 @@ Los parámetros de **Configuración** se guardan y quedan en la auditoría, pero
 
 ## Lo que conviene saber al tocar este código
 
-**Las Server Actions no llaman a `revalidatePath`.** Hacerlo desde dentro de una acción remonta el componente que la invocó y borra su estado: el aviso de atención inmediata y los mensajes de confirmación nunca llegaban a verse. En su lugar, el cliente pide `router.refresh()` cuando ya mostró el resultado. Como el cliente de la API usa `no-store`, no hay caché de servidor que invalidar.
+**Las acciones que muestran un resultado no llaman a `revalidatePath`.** Hacerlo desde dentro de una acción remonta el componente que la invocó y borra su estado: el aviso de atención inmediata y los mensajes de confirmación nunca llegaban a verse. En su lugar, el cliente pide `router.refresh()` cuando ya mostró el resultado (por ejemplo, al cerrar el diálogo). Las acciones de un solo paso que no tienen nada que mostrar (cancelar una cita, desactivar, finalizar, publicar, guardar un parámetro) sí llaman a `revalidatePath`: un `router.refresh()` lanzado en el mismo instante en que terminaba la acción a veces se perdía. Como el cliente de la API usa `no-store`, no hay caché de servidor que invalidar.
 
 **Los `<select>` de los formularios se controlan con estado.** React 19 restablece el formulario al terminar una acción: los `<input>` se repintan desde `valores`, pero un `<select>` no controlado vuelve a su opción inicial, así que tras un error se perdía lo elegido.
 
-**Los filtros llevan un valor explícito en la URL** (`?tipo=todos` en lugar de quitar el parámetro) y las listas filtrables suspenden solo la lista, no la página entera. Con `loading.tsx` a nivel de ruta, cambiar de filtro desmontaba la barra de filtros y se perdía la pulsación siguiente.
+**Los filtros llevan un valor explícito en la URL** (`?tipo=todos` en lugar de quitar el parámetro). Un enlace a la ruta desnuda, estando ya en esa ruta con parámetros, no navegaba a la primera pulsación.
 
-**Las listas del administrador no van dentro de un `<Suspense>`, y sus acciones de un paso sí revalidan.** Con la lista suspendida, una acción que la revalidaba o refrescaba a veces se quedaba en "Guardando…" aunque el servidor ya hubiera respondido (la base sí cambiaba). Por eso desactivar, finalizar, publicar o guardar un parámetro llaman a `revalidatePath` y los datos frescos llegan en la misma respuesta; los diálogos que muestran un resultado (crear un usuario, una asignación, un contenido…) siguen refrescando al cerrarse. Las listas de la gestante y del profesional todavía usan `<Suspense>` y la prueba "revisar una alerta" falla a veces por esta misma causa.
+**Cambiar de filtro, de pestaña o de página no sube al inicio de la pantalla.** Filtros y pestañas usan `scroll={false}`; la paginación enlaza a `#lista`, el `id` (`ANCLA_LISTA`) de la tarjeta que contiene la lista, y vuelve al comienzo de esa lista. Los buscadores usan `Form` de `next/form` con `scroll={false}`, que navega sin recargar la página. Una pantalla nueva con filtros, pestañas o paginación debe seguir las mismas reglas.
+
+**Las listas no van dentro de un `<Suspense>` y las pantallas con acciones no tienen `loading.tsx`.** Con la lista (o la página entera, en el caso de `loading.tsx`) dentro de un límite de suspensión, una acción que la revalidaba o refrescaba a veces se quedaba en "Guardando…" aunque el servidor ya hubiera respondido y la base hubiera cambiado: se midió en Citas, 3 de 8 cancelaciones con `loading.tsx` frente a 0 de 16 sin él. Además, el `loading.tsx` cambiaba toda la página por el esqueleto al cambiar de filtro y la mandaba al inicio. Sin ellos, al navegar se sigue viendo la pantalla anterior hasta que llega la nueva, y la barra de filtros no se desmonta. Solo Exámenes, que es de solo lectura, conserva su `loading.tsx`.

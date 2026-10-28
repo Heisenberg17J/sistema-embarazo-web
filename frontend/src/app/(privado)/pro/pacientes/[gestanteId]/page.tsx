@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 import { ArrowLeft, Baby, Mail, Phone, PhoneCall } from "lucide-react";
 import { DialogoControl } from "@/components/formularios/dialogo-control";
 import { DialogoExamen } from "@/components/formularios/dialogo-examen";
@@ -9,8 +8,8 @@ import { DialogoNuevaCita } from "@/components/formularios/dialogo-cita";
 import { AnilloGestacion } from "@/components/paneles/anillo-gestacion";
 import { DatoPaciente } from "@/components/paneles/tarjeta-paciente";
 import { Boton } from "@/components/ui/boton";
-import { EsqueletoLista } from "@/components/ui/esqueleto";
 import { Insignia } from "@/components/ui/insignia";
+import { ANCLA_LISTA } from "@/components/ui/paginacion";
 import { Pestanas, pestanaActiva } from "@/components/ui/pestanas";
 import { EncabezadoTarjeta, Panel, Tarjeta } from "@/components/ui/tarjeta";
 import { Vacio } from "@/components/ui/vacio";
@@ -231,7 +230,7 @@ export default async function PaginaFicha({
 
                 {/* --- Secciones -------------------------------------------- */}
                 {embarazo ? (
-                    <Tarjeta>
+                    <Tarjeta id={ANCLA_LISTA} className="scroll-mt-4">
                         <Pestanas
                             ruta={ruta}
                             params={consulta}
@@ -243,20 +242,16 @@ export default async function PaginaFicha({
                             etiqueta="Secciones de la ficha"
                         />
 
-                        {/* Solo la sección espera por el servidor: las pestañas
-                            siguen montadas y se pueden volver a pulsar. */}
-                        <Suspense
-                            key={`${seccion}-${pagina}`}
-                            fallback={<EsqueletoLista filas={3} />}
-                        >
-                            <Seccion
-                                seccion={seccion}
-                                embarazoId={embarazo.embarazo_id}
-                                pagina={pagina}
-                                ruta={ruta}
-                                params={consulta}
-                            />
-                        </Suspense>
+                        {/* Sin <Suspense>: con la lista suspendida, las acciones a veces se
+                            quedaban en "Guardando…" (ver el README). Los filtros siguen montados:
+                            mientras llega la lista nueva se ve la anterior. */}
+                        <Seccion
+                            seccion={seccion}
+                            embarazoId={embarazo.embarazo_id}
+                            pagina={pagina}
+                            ruta={ruta}
+                            params={consulta}
+                        />
                     </Tarjeta>
                 ) : (
                     <Tarjeta>

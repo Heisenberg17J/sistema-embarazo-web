@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import Form from "next/form";
 import Link from "next/link";
 import { BookOpen, ChevronRight, Search, Sparkles } from "lucide-react";
 import { Saludo } from "@/components/layout/saludo";
 import { Boton } from "@/components/ui/boton";
 import { Insignia } from "@/components/ui/insignia";
-import { Paginacion } from "@/components/ui/paginacion";
+import { ANCLA_LISTA, Paginacion } from "@/components/ui/paginacion";
 import { EncabezadoTarjeta, Tarjeta } from "@/components/ui/tarjeta";
 import { Vacio } from "@/components/ui/vacio";
 import { contenidoDeMiSemana, contenidos } from "@/lib/datos";
@@ -60,14 +61,15 @@ export default async function PaginaAprendizaje({
                     </Tarjeta>
                 )}
 
-                <Tarjeta>
+                <Tarjeta id={ANCLA_LISTA} className="scroll-mt-4">
                     <EncabezadoTarjeta
                         seccion="Todos los contenidos"
                         titulo="Biblioteca"
                     />
 
-                    {/* Formulario GET: busca sin JavaScript y deja la búsqueda en la URL. */}
-                    <form action="/aprendizaje" className="mt-4 flex gap-2">
+                    {/* Formulario GET: deja la búsqueda en la URL. Con next/form navega
+                    sin recargar la página ni subir al inicio. */}
+                    <Form scroll={false} action="/aprendizaje" className="mt-4 flex gap-2">
                         <div className="relative flex-1">
                             <Search
                                 className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
@@ -85,7 +87,7 @@ export default async function PaginaAprendizaje({
                         <Boton type="submit" variante="vidrio">
                             Buscar
                         </Boton>
-                    </form>
+                    </Form>
 
                     {catalogo.datos.length === 0 ? (
                         <Vacio

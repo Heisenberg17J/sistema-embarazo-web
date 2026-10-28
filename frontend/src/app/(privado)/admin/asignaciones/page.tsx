@@ -8,7 +8,7 @@ import { Saludo } from "@/components/layout/saludo";
 import { Boton } from "@/components/ui/boton";
 import { Filtros, TODOS, unParam } from "@/components/ui/filtros";
 import { Insignia } from "@/components/ui/insignia";
-import { Paginacion } from "@/components/ui/paginacion";
+import { ANCLA_LISTA, Paginacion } from "@/components/ui/paginacion";
 import { EncabezadoTarjeta, Tarjeta } from "@/components/ui/tarjeta";
 import { Vacio } from "@/components/ui/vacio";
 import { asignaciones, usuarios } from "@/lib/datos";
@@ -115,7 +115,7 @@ export default async function PaginaAsignaciones({
                     </Tarjeta>
                 )}
 
-                <Tarjeta>
+                <Tarjeta id={ANCLA_LISTA} className="scroll-mt-4">
                     <Filtros
                         ruta="/admin/asignaciones"
                         params={params}

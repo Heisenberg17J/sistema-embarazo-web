@@ -39,7 +39,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
     return (
         <html lang="es" suppressHydrationWarning>
+            {/* Extensiones como Grammarly añaden atributos al <body> antes de que
+                React hidrate; esto solo ignora los atributos de este elemento. */}
             <body
+                suppressHydrationWarning
                 className={`${inter.variable} ${fraunces.variable} app-backdrop min-h-dvh antialiased`}
             >
                 {children}
