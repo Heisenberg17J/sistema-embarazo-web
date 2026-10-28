@@ -31,7 +31,7 @@ export interface Sesion {
 /** Pantalla inicial de cada rol. */
 export const RUTA_INICIO: Record<Rol, string> = {
     GESTANTE: "/panel",
-    PROFESIONAL: "/pro/pacientes",
+    PROFESIONAL: "/pro",
     ADMINISTRADOR: "/admin",
 };
 

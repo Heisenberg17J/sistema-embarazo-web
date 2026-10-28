@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { Save } from "lucide-react";
 import { actualizarPerfil, type EstadoPerfil } from "@/acciones/perfil";
 import { Boton } from "@/components/ui/boton";
@@ -58,6 +58,11 @@ export function FormularioPerfil({
     const router = useRouter();
     const [estado, enviar, enviando] = useActionState(actualizarPerfil, INICIAL);
     const e = estado.porCampo ?? {};
+    // Controlado: un <select> no controlado pierde la opción elegida cuando
+    // React restablece el formulario al terminar la acción.
+    const [grupo, setGrupo] = useState(
+        (usuario.perfil as PerfilGestante | null)?.grupo_sanguineo ?? "",
+    );
 
     // React 19 limpia el formulario al terminar la acción; el refresco vuelve a
     // pintarlo con los datos ya guardados y actualiza el resto de pantallas.
@@ -152,7 +157,8 @@ export function FormularioPerfil({
                                         <select
                                             {...p}
                                             name="grupo_sanguineo"
-                                            defaultValue={gestante.grupo_sanguineo ?? ""}
+                                            value={grupo}
+                                            onChange={(ev) => setGrupo(ev.target.value)}
                                         >
                                             <option value="">Sin especificar</option>
                                             {GRUPOS.map((g) => (

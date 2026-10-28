@@ -120,3 +120,25 @@ export const ESTADO_ALERTA_TEXTO: Record<string, string> = {
     REVISADA: "Revisada",
     DESCARTADA: "Descartada",
 };
+
+/**
+ * Fecha de hoy en la zona local, como "AAAA-MM-DD".
+ *
+ * No sirve `toISOString()` a secas: pasa a UTC y después de las 7 p. m. en
+ * Colombia devolvería la fecha de mañana.
+ */
+export const hoyLocal = () => {
+    const d = new Date();
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 10);
+};
+
+/** Fecha local desplazada en días: `enDias(7)` es dentro de una semana. */
+export const enDias = (dias: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + dias);
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 10);
+};

@@ -10,7 +10,7 @@ test.describe("Sesión y control de acceso", () => {
         await salir(page);
 
         await entrar(page, USUARIOS.profesional);
-        await expect(page).toHaveURL(/\/pro\/pacientes$/);
+        await expect(page).toHaveURL(/\/pro$/);
         await salir(page);
 
         await entrar(page, USUARIOS.admin);
@@ -128,7 +128,7 @@ test.describe("Sesión y control de acceso", () => {
     test("una gestante no entra a las pantallas de otros roles", async ({ page }) => {
         await entrar(page, USUARIOS.gestante);
 
-        for (const ruta of ["/admin", "/admin/usuarios", "/pro/pacientes"]) {
+        for (const ruta of ["/admin", "/admin/usuarios", "/pro", "/pro/pacientes"]) {
             await page.goto(ruta);
             await expect(page).toHaveURL(/\/panel$/);
         }
@@ -141,7 +141,7 @@ test.describe("Sesión y control de acceso", () => {
 
         for (const ruta of ["/panel", "/evolucion", "/admin"]) {
             await page.goto(ruta);
-            await expect(page).toHaveURL(/\/pro\/pacientes$/);
+            await expect(page).toHaveURL(/\/pro$/);
         }
     });
 });

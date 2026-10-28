@@ -246,10 +246,49 @@ export interface TipoSintoma {
     activo: boolean;
 }
 
+export interface TipoControl {
+    id: number;
+    codigo: string;
+    nombre: string;
+    duracion_min: number;
+    activo: boolean;
+}
+
+export interface TipoExamen {
+    id: number;
+    codigo: string;
+    nombre: string;
+    descripcion: string | null;
+    activo: boolean;
+}
+
 export interface Pagina<T> {
     datos: T[];
     paginacion: { page: number; limit: number; total: number; paginas: number };
     aviso?: string;
+}
+
+/** Panel del profesional: `GET /dashboard` con rol PROFESIONAL. */
+export interface PanelProfesional {
+    rol: "PROFESIONAL";
+    resumen: {
+        pacientes: number;
+        alertas_pendientes: number;
+        alertas_criticas: number;
+        sin_cita_programada: number;
+    };
+    alertas_prioritarias: (Pick<
+        Alerta,
+        "id" | "embarazo_id" | "severidad" | "mensaje" | "valor_detectado" | "generada_en"
+    > & { gestante_usuario_id: number; gestante: string })[];
+    citas_hoy: {
+        id: number;
+        embarazo_id: number;
+        hora: string;
+        estado: EstadoCita;
+        tipo_control: string;
+        gestante: string;
+    }[];
 }
 
 /** Panel de la gestante: `GET /dashboard` con rol GESTANTE. */

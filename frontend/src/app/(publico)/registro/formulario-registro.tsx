@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { UserPlus } from "lucide-react";
 import { registrarGestante, type EstadoFormulario } from "@/acciones/auth";
 import { Boton } from "@/components/ui/boton";
@@ -44,6 +44,10 @@ export function FormularioRegistro() {
     // React 19 limpia los campos al terminar la acción: se repintan desde el
     // estado para que un error de validación no borre el formulario entero.
     const v = estado?.valores ?? {};
+    // Los <select> se controlan con estado: a diferencia de los <input>, no
+    // conservan la opción elegida cuando React restablece el formulario.
+    const [documento, setDocumento] = useState("CC");
+    const [grupo, setGrupo] = useState("");
 
     return (
         <form action={enviar} className="mt-5 space-y-7" noValidate>
@@ -81,7 +85,8 @@ export function FormularioRegistro() {
                             <select
                                 {...p}
                                 name="tipo_documento"
-                                defaultValue={v.tipo_documento ?? "CC"}
+                                value={documento}
+                                onChange={(ev) => setDocumento(ev.target.value)}
                                 required
                             >
                                 {DOCUMENTOS.map((d) => (
@@ -201,7 +206,12 @@ export function FormularioRegistro() {
                 </div>
                 <Campo etiqueta="Grupo sanguíneo" error={e.grupo_sanguineo}>
                     {(p) => (
-                        <select {...p} name="grupo_sanguineo" defaultValue={v.grupo_sanguineo ?? ""}>
+                        <select
+                            {...p}
+                            name="grupo_sanguineo"
+                            value={grupo}
+                            onChange={(ev) => setGrupo(ev.target.value)}
+                        >
                             <option value="">Sin especificar</option>
                             {GRUPOS.map((g) => (
                                 <option key={g} value={g}>

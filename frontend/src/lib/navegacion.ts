@@ -54,6 +54,7 @@ export const NAVEGACION: Record<
     },
     PROFESIONAL: {
         principales: [
+            { href: "/pro", texto: "Panel", icono: Home },
             { href: "/pro/pacientes", texto: "Pacientes", icono: Users },
             { href: "/pro/agenda", texto: "Agenda", icono: CalendarDays },
             { href: "/pro/alertas", texto: "Alertas", icono: BellRing },
@@ -85,8 +86,15 @@ export const ROL_TEXTO: Record<Rol, string> = {
 
 export const ICONO_CONTROL = ClipboardList;
 
-/** true si la ruta actual corresponde a este elemento de navegación. */
+/**
+ * true si la ruta actual corresponde a este elemento de navegación.
+ *
+ * Las raíces de cada rol se comparan exactas: si no, "Panel" quedaría marcado
+ * en todas las pantallas que cuelgan de ellas.
+ */
+const RAICES = ["/panel", "/pro", "/admin"];
+
 export const esRutaActiva = (href: string, actual: string) =>
-    href === "/admin" || href === "/panel"
+    RAICES.includes(href)
         ? actual === href
         : actual === href || actual.startsWith(`${href}/`);

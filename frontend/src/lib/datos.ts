@@ -14,6 +14,9 @@ import type {
     Sintoma,
     TipoMedicion,
     TipoSintoma,
+    TipoControl,
+    TipoExamen,
+    Paciente,
     Cita,
     Usuario,
 } from "./tipos";
@@ -79,6 +82,12 @@ export const alertas = cache((params: Record<string, unknown> = {}) =>
     api.get<Pagina<Alerta>>(`/alertas${consulta(params)}`),
 );
 
+/** Alertas de un embarazo concreto, para la ficha de la paciente. */
+export const alertasDeEmbarazo = cache(
+    (id: number, params: Record<string, unknown> = {}) =>
+        api.get<Pagina<Alerta>>(`/embarazos/${id}/alertas${consulta(params)}`),
+);
+
 export const contenidoDeMiSemana = cache(() =>
     obtenerONulo<{ semana: number; contenidos: Contenido[] }>(
         "/contenido/mi-semana",
@@ -105,3 +114,27 @@ export const tiposSintoma = cache(() =>
 
 /** Usuario autenticado con su perfil (incluye el contacto de emergencia). */
 export const usuarioActual = cache(() => api.get<Usuario>("/auth/me"));
+
+// --- Lecturas del profesional ---------------------------------------------
+
+export const pacientes = cache((q?: string) =>
+    api.get<Paciente[]>(`/pacientes${consulta({ q })}`),
+);
+
+/** Ficha de una paciente asignada: datos personales y sus embarazos. */
+export const paciente = cache((gestanteId: number) =>
+    obtenerONulo<Usuario & { embarazos: Embarazo[] }>(`/pacientes/${gestanteId}`),
+);
+
+/** Agenda propia (profesional) o citas propias (gestante). */
+export const citas = cache((params: Record<string, unknown> = {}) =>
+    api.get<Pagina<Cita>>(`/citas${consulta(params)}`),
+);
+
+export const tiposControl = cache(() =>
+    api.get<TipoControl[]>("/catalogos/tipos-control", { revalidar: 300 }),
+);
+
+export const tiposExamen = cache(() =>
+    api.get<TipoExamen[]>("/catalogos/tipos-examen", { revalidar: 300 }),
+);

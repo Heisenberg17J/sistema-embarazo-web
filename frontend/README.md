@@ -91,7 +91,7 @@ e2e/                pruebas de extremo a extremo y generador de capturas
 |---|---|---|
 | Público | Login, registro de gestante, cambio de contraseña | — |
 | Gestante | **Completo**: panel, registrar embarazo, citas, evolución, síntomas, exámenes, historial, alertas, aprendizaje y su detalle, perfil, menú "Más", aviso de atención inmediata | — |
-| Profesional | — | Pacientes, ficha de paciente, agenda, bandeja de alertas |
+| Profesional | **Completo**: panel, pacientes, ficha con pestañas, agenda, bandeja de alertas, registro de controles, exámenes y citas | — |
 | Administrador | — | Estadísticas, usuarios, asignaciones, catálogos, reglas, contenido, auditoría, configuración |
 
 Las pantallas pendientes existen como marcadores navegables que enumeran lo que va a contener cada una, para que la navegación funcione mientras se construyen.
@@ -99,5 +99,7 @@ Las pantallas pendientes existen como marcadores navegables que enumeran lo que 
 ## Dos cosas que conviene saber al tocar este código
 
 **Las Server Actions no llaman a `revalidatePath`.** Hacerlo desde dentro de una acción remonta el componente que la invocó y borra su estado: el aviso de atención inmediata y los mensajes de confirmación nunca llegaban a verse. En su lugar, el cliente pide `router.refresh()` cuando ya mostró el resultado. Como el cliente de la API usa `no-store`, no hay caché de servidor que invalidar.
+
+**Los `<select>` de los formularios se controlan con estado.** React 19 restablece el formulario al terminar una acción: los `<input>` se repintan desde `valores`, pero un `<select>` no controlado vuelve a su opción inicial, así que tras un error se perdía lo elegido.
 
 **Los filtros llevan un valor explícito en la URL** (`?tipo=todos` en lugar de quitar el parámetro) y las listas filtrables suspenden solo la lista, no la página entera. Con `loading.tsx` a nivel de ruta, cambiar de filtro desmontaba la barra de filtros y se perdía la pulsación siguiente.
