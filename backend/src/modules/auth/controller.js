@@ -7,6 +7,8 @@ const { registrarAuditoria, ipDe } = require('../../services/auditoria');
 const {
     hashContrasena, verificarContrasena, obtenerUsuarioCompleto, crearUsuario, actualizarParcial
 } = require('../../services/usuarios');
+const { exportarDatos } = require('../../services/datos-personales');
+const { solicitarRecuperacion, consumirToken, avisarCambio } = require('../../services/recuperacion');
 
 const sha256 = (valor) => crypto.createHash('sha256').update(valor).digest('hex');
 
@@ -24,10 +26,10 @@ const emitirSesion = async (db, usuario, req) => {
 
 // RF-01: el registro público solo crea gestantes; profesionales y administradores los crea el administrador.
 const registro = async (req, res) => {
-    const { nombre, apellido, correo, contrasena, ...perfil } = req.body;
+    const { nombre, apellido, correo, contrasena, acepto_politica: _acepto, version_politica: versionPolitica, ...perfil } = req.body;
     const resultado = await transaccion(async (db) => {
-        const id = await crearUsuario(db, { rol: 'GESTANTE', nombre, apellido, correo, contrasena, perfil });
-        await registrarAuditoria(db, { usuarioId: id, accion: 'CREAR', entidad: 'usuario', entidadId: id, detalle: { origen: 'registro' }, ip: ipDe(req) });
+        const id = await crearUsuario(db, { rol: 'GESTANTE', nombre, apellido, correo, contrasena, perfil, versionPolitica });
+        await registrarAuditoria(db, { usuarioId: id, accion: 'CREAR', entidad: 'usuario', entidadId: id, detalle: { origen: 'registro', version_politica: versionPolitica }, ip: ipDe(req) });
         const usuario = await obtenerUsuarioCompleto(db, id);
         return { usuario, ...(await emitirSesion(db, usuario, req)) };
     });
@@ -50,7 +52,7 @@ const login = async (req, res) => {
             usuarioId: candidato?.id, accion: 'LOGIN_FALLIDO', entidad: 'usuario', entidadId: candidato?.id,
             detalle: { correo, motivo: !valida ? 'credenciales' : 'inactivo' }, ip: ipDe(req)
         });
-        throw new HttpError(401, valida ? 'La cuenta está desactivada. Contacte al administrador.' : 'Correo o contraseña incorrectos');
+        throw new HttpError(401, valida ? 'La cuenta está desactivada. Contacta al administrador.' : 'Correo o contraseña incorrectos');
     }
 
     const resultado = await transaccion(async (db) => {
@@ -129,4 +131,80 @@ const actualizarPerfil = async (req, res) => {
     res.status(200).json(usuario);
 };
 
-module.exports = { registro, login, refrescar, logout, yo, cambiarContrasena, actualizarPerfil };
+// Derecho de consulta: todo lo que el sistema guarda de la persona, como archivo descargable.
+const misDatos = async (req, res) => {
+    const datos = await exportarDatos(pool, req.usuario.id);
+    await registrarAuditoria(null, {
+        usuarioId: req.usuario.id, accion: 'CONSULTAR_SENSIBLE', entidad: 'usuario', entidadId: req.usuario.id,
+        detalle: { recurso: 'mis-datos' }, ip: ipDe(req)
+    });
+    res.set('Content-Disposition', 'attachment; filename="mis-datos.json"');
+    res.status(200).json(datos);
+};
+
+// Derecho de supresión: la gestante la solicita y el administrador la atiende.
+const estadoSupresion = async (req, res) => {
+    const { rows } = await pool.query(
+        `SELECT id, estado, motivo, solicitada_en, atendida_en, respuesta
+           FROM solicitud_supresion WHERE usuario_id = $1 ORDER BY solicitada_en DESC LIMIT 1`, [req.usuario.id]
+    );
+    res.status(200).json(rows[0] || null);
+};
+
+const solicitarSupresion = async (req, res) => {
+    const solicitud = await transaccion(async (db) => {
+        const { rows } = await db.query(
+            'INSERT INTO solicitud_supresion (usuario_id, motivo) VALUES ($1, $2) RETURNING id, estado, motivo, solicitada_en',
+            [req.usuario.id, req.body.motivo ?? null]
+        );
+        await registrarAuditoria(db, {
+            usuarioId: req.usuario.id, accion: 'CREAR', entidad: 'solicitud_supresion', entidadId: rows[0].id, ip: ipDe(req)
+        });
+        return rows[0];
+    });
+    res.status(201).json(solicitud);
+};
+
+// Recuperación de contraseña. La respuesta de /recuperar es siempre la misma, exista o no
+// el correo, para que el formulario no sirva para averiguar quién tiene cuenta.
+const MENSAJE_RECUPERACION =
+    'Si el correo está registrado, te enviamos un enlace para restablecer tu contraseña. Revisa también la carpeta de spam.';
+
+const recuperar = async (req, res) => {
+    const resultado = await transaccion((db) => solicitarRecuperacion(db, { correo: req.body.correo, ip: ipDe(req) }));
+    if (resultado.creado) {
+        await registrarAuditoria(null, {
+            usuarioId: resultado.usuarioId, accion: 'MODIFICAR', entidad: 'usuario', entidadId: resultado.usuarioId,
+            detalle: { campo: 'contrasena', tipo: 'recuperacion_solicitada' }, ip: ipDe(req)
+        });
+    }
+    res.status(200).json({ mensaje: MENSAJE_RECUPERACION });
+};
+
+const restablecer = async (req, res) => {
+    const usuario = await transaccion(async (db) => {
+        const u = await consumirToken(db, req.body.token);
+        if (!u) throw new HttpError(400, 'El enlace no es válido o ya venció. Solicita uno nuevo.');
+
+        await db.query(
+            'UPDATE usuario SET hash_contrasena = $2, debe_cambiar_contrasena = FALSE WHERE id = $1',
+            [u.id, await hashContrasena(req.body.contrasena_nueva)]
+        );
+        // Quien tuviera una sesión abierta (por ejemplo, un tercero que ya sabía la
+        // contraseña anterior) pierde el acceso; los demás enlaces pendientes también.
+        await db.query('UPDATE sesion SET revocada_en = now() WHERE usuario_id = $1 AND revocada_en IS NULL', [u.id]);
+        await db.query('UPDATE recuperacion_contrasena SET usada_en = now() WHERE usuario_id = $1 AND usada_en IS NULL', [u.id]);
+        await registrarAuditoria(db, {
+            usuarioId: u.id, accion: 'MODIFICAR', entidad: 'usuario', entidadId: u.id,
+            detalle: { campo: 'contrasena', tipo: 'recuperacion' }, ip: ipDe(req)
+        });
+        return u;
+    });
+    void avisarCambio(usuario);
+    res.status(200).json({ mensaje: 'Contraseña actualizada. Ya puedes iniciar sesión.' });
+};
+
+module.exports = {
+    registro, login, refrescar, logout, yo, cambiarContrasena, actualizarPerfil,
+    misDatos, estadoSupresion, solicitarSupresion, recuperar, restablecer
+};

@@ -1,4 +1,5 @@
 const { z } = require('zod');
+const { hoy } = require('./fechas');
 
 // Piezas de validación reutilizadas por los módulos (RNF-10).
 const id = z.coerce.number({ invalid_type_error: 'Debe ser un número' }).int().positive('Debe ser un identificador válido');
@@ -27,11 +28,8 @@ const paginacion = z.object({
 
 const noFutura = (esquema) => esquema.refine((v) => v <= hoyLocal(), 'La fecha no puede ser futura');
 
-// Fecha local del servidor (evita que después de las 7 p. m. en Colombia "hoy" sea mañana en UTC).
-const hoyLocal = () => {
-    const d = new Date();
-    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-};
+// Fecha de hoy en la zona de la aplicación (ver utils/fechas.js).
+const hoyLocal = hoy;
 
 module.exports = {
     z, id, idParam, fecha, hora, texto, textoOpcional, correo, contrasena, telefono, booleano,

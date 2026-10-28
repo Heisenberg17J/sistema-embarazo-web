@@ -137,4 +137,60 @@ router.patch('/reglas-alerta/:id', soloAdmin, validar({ params: idParam(), body:
     res.status(200).json(regla);
 }));
 
+// --- Aprobación clínica (RF-11) --------------------------------------------
+//
+// Los umbrales y los mensajes que lee la gestante deben estar avalados por quien
+// responde clínicamente por ellos: un profesional de salud, no el administrador.
+// Si después alguien cambia lo aprobado, un trigger de la base retira la
+// aprobación (migración 004): lo que firmó el profesional ya no sería lo vigente.
+
+const SELECT_APROBACION = (tabla) => `
+    SELECT t.id, t.aprobada_en, t.aprobada_por, u.nombre || ' ' || u.apellido AS aprobada_por_nombre
+      FROM ${tabla} t
+      LEFT JOIN usuario u ON u.id = t.aprobada_por`;
+
+router.get('/revision-clinica', permitir(ROLES.PROFESIONAL, ROLES.ADMINISTRADOR), manejar(async (req, res) => {
+    const [reglas, signos] = await Promise.all([
+        pool.query(
+            `SELECT r.id, r.codigo, t.nombre AS medicion, t.unidad, r.operador, r.valor_referencia, r.valor_min,
+                    r.valor_max, r.semana_desde, r.semana_hasta, r.severidad, r.mensaje, r.activa,
+                    r.aprobada_en, u.nombre || ' ' || u.apellido AS aprobada_por
+               FROM regla_alerta r
+               JOIN tipo_medicion t ON t.id = r.tipo_medicion_id
+               LEFT JOIN usuario u ON u.id = r.aprobada_por
+              WHERE r.activa
+              ORDER BY (r.aprobada_en IS NOT NULL), t.nombre, r.severidad DESC`),
+        pool.query(
+            `SELECT s.id, s.codigo, s.nombre, s.severidad, s.mensaje_alarma, s.alarma_hasta_semana, s.activo,
+                    s.aprobada_en, u.nombre || ' ' || u.apellido AS aprobada_por
+               FROM tipo_sintoma s
+               LEFT JOIN usuario u ON u.id = s.aprobada_por
+              WHERE s.es_signo_alarma AND s.activo
+              ORDER BY (s.aprobada_en IS NOT NULL), s.severidad DESC, s.nombre`)
+    ]);
+    const pendientes = [...reglas.rows, ...signos.rows].filter((x) => !x.aprobada_en).length;
+    res.status(200).json({ reglas: reglas.rows, signos: signos.rows, pendientes });
+}));
+
+const aprobar = (tabla, entidad, condicion = 'TRUE') => manejar(async (req, res) => {
+    const resultado = await transaccion(async (db) => {
+        const { rowCount } = await db.query(
+            `UPDATE ${tabla} SET aprobada_por = $2, aprobada_en = now() WHERE id = $1 AND ${condicion}`,
+            [req.params.id, req.usuario.id]
+        );
+        if (!rowCount) throw noEncontrado('Elemento');
+        await registrarAuditoria(db, {
+            usuarioId: req.usuario.id, accion: 'MODIFICAR', entidad, entidadId: req.params.id,
+            detalle: { aprobacion_clinica: true }, ip: ipDe(req)
+        });
+        return (await db.query(`${SELECT_APROBACION(tabla)} WHERE t.id = $1`, [req.params.id])).rows[0];
+    });
+    res.status(200).json(resultado);
+});
+
+router.post('/reglas-alerta/:id/aprobar', permitir(ROLES.PROFESIONAL), validar({ params: idParam() }),
+    aprobar('regla_alerta', 'regla_alerta'));
+router.post('/tipos-sintoma/:id/aprobar', permitir(ROLES.PROFESIONAL), validar({ params: idParam() }),
+    aprobar('tipo_sintoma', 'tipo_sintoma', 'es_signo_alarma'));
+
 module.exports = router;

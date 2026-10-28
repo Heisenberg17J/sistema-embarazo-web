@@ -5,21 +5,36 @@ const { ROLES } = require('../../middlewares/roles');
 const { resumenEmbarazo } = require('../../services/embarazo');
 const { AVISO } = require('../../services/alertas');
 const { manejar } = require('../../utils/http');
+const configuracion = require('../../services/configuracion');
 
 const router = express.Router();
 
+// Quién la acompaña y cómo contactarle. Solo datos de trabajo del perfil profesional: el correo
+// de acceso de la persona no se comparte.
+const profesionalesDe = async (usuarioId) => {
+    const { rows } = await pool.query(
+        `SELECT u.id, u.nombre || ' ' || u.apellido AS nombre, p.especialidad, p.institucion, p.telefono
+           FROM asignacion a
+           JOIN usuario u ON u.id = a.profesional_usuario_id AND u.activo
+           JOIN perfil_profesional p ON p.usuario_id = u.id
+          WHERE a.gestante_usuario_id = $1 AND a.activa
+          ORDER BY a.creada_en, u.id`, [usuarioId]);
+    return rows;
+};
+
 const panelGestante = async (usuarioId) => {
+    const profesionales = await profesionalesDe(usuarioId);
     const { rows: emb } = await pool.query(
         `SELECT id FROM embarazo WHERE gestante_usuario_id = $1 AND estado = 'ACTIVO'`, [usuarioId]
     );
-    if (!emb[0]) return { embarazo: null, mensaje: 'Aún no ha registrado un embarazo activo.' };
+    if (!emb[0]) return { embarazo: null, profesionales, mensaje: 'Aún no ha registrado un embarazo activo.' };
     const embarazoId = emb[0].id;
     const embarazo = await resumenEmbarazo(pool, embarazoId);
 
     const [cita, alertas, mediciones, contenido] = await Promise.all([
         pool.query(
             `SELECT ci.id, ci.fecha, to_char(ci.hora, 'HH24:MI') AS hora, ci.estado, tc.nombre AS tipo_control,
-                    u.nombre || ' ' || u.apellido AS profesional
+                    (ci.fecha - CURRENT_DATE) AS dias_para, u.nombre || ' ' || u.apellido AS profesional
                FROM cita ci JOIN tipo_control tc ON tc.id = ci.tipo_control_id JOIN usuario u ON u.id = ci.profesional_usuario_id
               WHERE ci.embarazo_id = $1 AND ci.estado IN ('PROGRAMADA', 'REPROGRAMADA') AND ci.fecha + ci.hora >= now()
               ORDER BY ci.fecha, ci.hora LIMIT 1`, [embarazoId]),
@@ -41,9 +56,17 @@ const panelGestante = async (usuarioId) => {
               ORDER BY leido, c.id LIMIT 3`, [embarazo.semana_actual, usuarioId])
     ]);
 
+    // `dias_recordatorio_cita` (configuración del administrador): con tantos días o menos de
+    // anticipación, la pantalla destaca la cita.
+    const diasRecordatorio = await configuracion.entero('dias_recordatorio_cita');
+    const proximaCita = cita.rows[0]
+        ? { ...cita.rows[0], recordatorio: cita.rows[0].dias_para <= diasRecordatorio }
+        : null;
+
     return {
         embarazo,
-        proxima_cita: cita.rows[0] || null,
+        profesionales,
+        proxima_cita: proximaCita,
         alertas_pendientes: alertas.rows,
         ultimas_mediciones: mediciones.rows,
         contenido_semana: contenido.rows,

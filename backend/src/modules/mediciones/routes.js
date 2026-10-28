@@ -2,7 +2,7 @@ const express = require('express');
 const ctrl = require('./controller');
 const { validar } = require('../../middlewares/validar');
 const { manejar } = require('../../utils/http');
-const { z, fecha, textoOpcional, paginacion } = require('../../utils/esquemas');
+const { z, idParam, fecha, textoOpcional, paginacion } = require('../../utils/esquemas');
 const { medicionItem } = require('./esquemas');
 
 const router = express.Router();
@@ -23,5 +23,16 @@ const esquemaSerie = z.object({
 router.get('/', validar({ query: paginacion.extend({ tipo: z.string().trim().toUpperCase().optional(), desde: fecha.optional(), hasta: fecha.optional() }) }), manejar(ctrl.listar));
 router.get('/serie', validar({ query: esquemaSerie }), manejar(ctrl.serie));
 router.post('/', validar({ body: esquemaCrear }), manejar(ctrl.crear));
+
+// Corrección de datos: gestante (24 h) o profesional (7 días), solo sobre lo que registraron.
+const motivo = textoOpcional(255);
+const esquemaCorregir = z.object({
+    valor: z.number({ invalid_type_error: 'El valor debe ser numérico' }).finite().optional(),
+    observaciones: textoOpcional(255),
+    motivo
+}).refine((d) => d.valor !== undefined || d.observaciones !== undefined, { message: 'Indica qué quieres corregir', path: ['valor'] });
+
+router.patch('/:id', validar({ params: idParam(), body: esquemaCorregir }), manejar(ctrl.corregir));
+router.delete('/:id', validar({ params: idParam(), body: z.object({ motivo }).partial() }), manejar(ctrl.eliminar));
 
 module.exports = router;

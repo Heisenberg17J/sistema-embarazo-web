@@ -13,7 +13,7 @@ const DIR_MIGRACIONES = path.join(DIR_DB, 'migrations');
 
 const ejecutar = async ({ reset = false, seed = false, soloSeed = false, silencioso = false } = {}) => {
     const log = silencioso ? () => {} : console.log;
-    const client = new Client(env.db);
+    const client = new Client({ ...env.db, options: `-c timezone=${env.zonaHoraria}` });
     await client.connect();
     try {
         if (reset) {
