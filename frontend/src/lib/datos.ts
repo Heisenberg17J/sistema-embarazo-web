@@ -19,6 +19,11 @@ import type {
     Paciente,
     Cita,
     Usuario,
+    UsuarioListado,
+    Asignacion,
+    ReglaAlerta,
+    ParametroSistema,
+    RegistroAuditoria,
 } from "./tipos";
 
 /**
@@ -137,4 +142,39 @@ export const tiposControl = cache(() =>
 
 export const tiposExamen = cache(() =>
     api.get<TipoExamen[]>("/catalogos/tipos-examen", { revalidar: 300 }),
+);
+
+// --- Lecturas del administrador -------------------------------------------
+
+export const usuarios = cache((params: Record<string, unknown> = {}) =>
+    api.get<Pagina<UsuarioListado>>(`/usuarios${consulta(params)}`),
+);
+
+/** Usuario con su perfil completo, o null si no existe. */
+export const usuarioPorId = cache((id: number) =>
+    obtenerONulo<Usuario>(`/usuarios/${id}`),
+);
+
+export const asignaciones = cache((params: Record<string, unknown> = {}) =>
+    api.get<Pagina<Asignacion>>(`/asignaciones${consulta(params)}`),
+);
+
+/**
+ * Catálogo completo, incluidos los inactivos. Sin caché: el administrador
+ * tiene que ver su cambio en cuanto lo guarda.
+ */
+export const catalogoCompleto = cache(<T>(ruta: string) =>
+    api.get<T[]>(`/catalogos/${ruta}?todos=true`),
+);
+
+export const reglasAlerta = cache(() =>
+    api.get<ReglaAlerta[]>("/catalogos/reglas-alerta"),
+);
+
+export const configuracion = cache(() =>
+    api.get<ParametroSistema[]>("/admin/configuracion"),
+);
+
+export const auditoria = cache((params: Record<string, unknown> = {}) =>
+    api.get<Pagina<RegistroAuditoria>>(`/admin/auditoria${consulta(params)}`),
 );

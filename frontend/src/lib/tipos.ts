@@ -311,3 +311,90 @@ export interface PanelGestante {
     contenido_semana: Pick<Contenido, "id" | "titulo" | "categoria" | "leido">[];
     aviso: string;
 }
+
+// --- Administración ---------------------------------------------------------
+
+/** Fila de `GET /usuarios`: sin perfil, que solo trae `GET /usuarios/:id`. */
+export type UsuarioListado = Pick<
+    Usuario,
+    "id" | "rol" | "nombre" | "apellido" | "correo" | "activo" | "ultimo_acceso" | "creado_en"
+>;
+
+export interface Asignacion {
+    id: number;
+    profesional_usuario_id: number;
+    profesional: string;
+    gestante_usuario_id: number;
+    gestante: string;
+    fecha_inicio: string;
+    fecha_fin: string | null;
+    activa: boolean;
+    creada_en: string;
+    asignada_por: number | null;
+}
+
+export type OperadorRegla =
+    | "MENOR"
+    | "MENOR_IGUAL"
+    | "MAYOR"
+    | "MAYOR_IGUAL"
+    | "FUERA_DE_RANGO";
+
+export interface ReglaAlerta {
+    id: number;
+    tipo_medicion_id: number;
+    tipo_medicion: string;
+    unidad: string;
+    codigo: string;
+    operador: OperadorRegla;
+    valor_referencia: number | null;
+    valor_min: number | null;
+    valor_max: number | null;
+    semana_desde: number;
+    semana_hasta: number;
+    severidad: Severidad;
+    mensaje: string;
+    activa: boolean;
+    creada_por: number | null;
+    creada_en: string;
+}
+
+export interface ParametroSistema {
+    clave: string;
+    valor: string;
+    descripcion: string | null;
+    actualizado_por: number | null;
+    actualizado_en: string;
+}
+
+export type AccionAuditoria =
+    | "LOGIN"
+    | "LOGIN_FALLIDO"
+    | "LOGOUT"
+    | "CREAR"
+    | "MODIFICAR"
+    | "DESACTIVAR"
+    | "CONSULTAR_SENSIBLE";
+
+export interface RegistroAuditoria {
+    id: number;
+    usuario_id: number | null;
+    usuario_correo: string | null;
+    accion: AccionAuditoria;
+    entidad: string;
+    entidad_id: number | null;
+    detalle: Record<string, unknown> | null;
+    ip: string | null;
+    ocurrido_en: string;
+}
+
+/** Panel del administrador: `GET /dashboard` con rol ADMINISTRADOR. Solo agregados. */
+export interface PanelAdministrador {
+    rol: "ADMINISTRADOR";
+    usuarios_por_rol: { rol: Rol; activos: number; inactivos: number }[];
+    gestantes_sin_profesional: number;
+    embarazos_por_estado: { estado: EstadoEmbarazo; total: number }[];
+    alertas: { severidad: Severidad; estado: EstadoAlerta; total: number }[];
+    citas_por_estado: { estado: EstadoCita; total: number }[];
+    contenido: { publicados: number; lecturas: number };
+}
