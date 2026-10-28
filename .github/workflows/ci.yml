@@ -1,0 +1,118 @@
+# Integración continua: pruebas de la API, comprobaciones del frontend, pruebas de extremo a extremo
+# y construcción de las imágenes de Docker. Corre en cada push y en cada pull request.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: API (pruebas)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 3s --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      # tests/env.js apunta a postgres/postgres en localhost y crea su propia base de pruebas.
+      - run: npm test
+        env:
+          JWT_SECRET: secreto-de-integracion-continua-con-mas-de-32-caracteres
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_NAME: seguimiento_embarazo
+
+  frontend:
+    name: Web (tipos, lint, build y e2e)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: seguimiento_embarazo
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      # Las lee el backend (config/env.js) cuando no hay backend/.env.
+      JWT_SECRET: secreto-de-integracion-continua-con-mas-de-32-caracteres
+      DB_HOST: localhost
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: seguimiento_embarazo
+      BCRYPT_COSTO: "4"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+      - name: Dependencias
+        run: |
+          npm ci --prefix backend
+          npm ci --prefix frontend
+      - name: Tipos y lint
+        working-directory: frontend
+        run: |
+          npm run typecheck
+          npm run lint
+      - name: Compilar
+        working-directory: frontend
+        run: npm run build
+      - name: Navegadores de Playwright
+        working-directory: frontend
+        run: npx playwright install --with-deps
+      - name: Base de datos y API
+        working-directory: backend
+        run: |
+          npm run db:reset
+          # Con NODE_ENV=test la API no aplica los límites de intentos, que tumbarían la suite.
+          # Solo la API lo lleva: `next build` y `next start` deben correr en producción.
+          NODE_ENV=test nohup npm start > ../api.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf localhost:4000/api/v1/salud && break; sleep 1; done
+      - name: Pruebas de extremo a extremo
+        working-directory: frontend
+        run: npm run test:e2e
+      - name: Informe de Playwright
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-fallos
+          path: |
+            frontend/test-results
+            api.log
+          retention-days: 7
+
+  imagenes:
+    name: Imágenes de Docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: API
+        run: docker build -f backend/Dockerfile -t embarazo-api .
+      - name: Web
+        run: docker build -t embarazo-web frontend

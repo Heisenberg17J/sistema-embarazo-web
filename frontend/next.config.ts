@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+    // Imagen de Docker mínima: con NEXT_OUTPUT=standalone (lo fija el Dockerfile), `next build`
+    // deja en .next/standalone el servidor con lo justo. En local no se activa: `next start`
+    // no funciona con esa salida.
+    output: process.env.NEXT_OUTPUT === "standalone" ? "standalone" : undefined,
+    outputFileTracingRoot: __dirname,
     // El repositorio tiene varios package-lock.json (raíz, backend, frontend);
     // esto le dice a Turbopack cuál es la raíz de este proyecto.
     turbopack: { root: __dirname },
