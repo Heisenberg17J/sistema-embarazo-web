@@ -24,6 +24,12 @@ const nextConfig: NextConfig = {
                     },
                 ],
             },
+            // Las imágenes de marca llevan la versión en el nombre (fondo-ondas.v1.avif):
+            // un cambio de imagen cambia la URL, así que pueden cachearse para siempre.
+            {
+                source: "/marca/:archivo*",
+                headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+            },
         ];
     },
 };

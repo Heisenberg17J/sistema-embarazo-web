@@ -5,6 +5,14 @@ import { NavInferior } from "@/components/layout/nav-inferior";
 import { PieDescargo } from "@/components/layout/pie-descargo";
 import { ROL_TEXTO } from "@/lib/navegacion";
 import { RUTA_INICIO, type Sesion } from "@/lib/sesion";
+import type { Rol } from "@/lib/tipos";
+
+/** Intensidad visual por rol: el CSS limita patrón e ilustraciones a la gestante. */
+const DATA_ROL: Record<Rol, string> = {
+    GESTANTE: "gestante",
+    PROFESIONAL: "profesional",
+    ADMINISTRADOR: "admin",
+};
 
 /**
  * Marco común de las pantallas con sesión: encabezado de vidrio, contenido
@@ -18,7 +26,7 @@ export function MarcoApp({
     children: React.ReactNode;
 }) {
     return (
-        <div className="min-h-dvh">
+        <div className="min-h-dvh" data-rol={DATA_ROL[sesion.rol]}>
             <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
                 <header className="glass relative z-20 flex items-center justify-between gap-3 rounded-3xl px-4 py-3 sm:px-5">
                     <Logo href={RUTA_INICIO[sesion.rol]} />

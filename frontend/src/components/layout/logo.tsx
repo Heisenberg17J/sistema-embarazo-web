@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MARCA } from "@/lib/marca";
+import { Isotipo } from "./isotipo";
 import { cn } from "@/lib/utils";
 
 /**
@@ -17,12 +18,7 @@ export function Logo({
 }) {
     const contenido = (
         <>
-            <span
-                className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary font-display text-xl font-semibold text-primary-foreground"
-                aria-hidden
-            >
-                {MARCA.inicial}
-            </span>
+            <Isotipo className="h-11" />
             <span className="min-w-0">
                 <strong className="block truncate font-display text-lg font-semibold leading-tight">
                     <span className="sm:hidden">{MARCA.nombreCorto}</span>

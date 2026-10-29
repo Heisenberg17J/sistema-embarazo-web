@@ -5,20 +5,25 @@
    Tokens tomados del mockup de referencia (Tailwind v4 + shadcn).
    Los colores de TEXTO se oscurecieron respecto al mockup para cumplir
    contraste AA 4.5:1 sobre las superficies de vidrio translúcidas.
+
+   Identidad visual: la paleta sale de los assets de marca (public/marca),
+   pervinca #a5bce6, azul medio #516eaa y marino #212e4e, medidos en oklch.
+   El rosa del mockup desapareció del fondo; queda solo como acento.
    ============================================================================= */
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-    /* Fondo degradado de la aplicación */
+    /* Fondo degradado de la aplicación: pervinca de los assets que se aclara
+       hacia un blanco apenas cálido. */
     --fondo-app: linear-gradient(
         160deg,
-        oklch(91% 0.035 255) 0%,
-        oklch(91% 0.035 350) 48%,
-        oklch(96% 0.018 90) 100%
+        oklch(90.5% 0.04 266) 0%,
+        oklch(94% 0.024 270) 55%,
+        oklch(96.5% 0.014 80) 100%
     );
 
-    --background: oklch(94% 0.02 265);
+    --background: oklch(94% 0.022 268);
     --foreground: oklch(30% 0.065 266);
 
     /* Superficies de vidrio: blanco translúcido sobre el degradado */
@@ -26,13 +31,16 @@
     --card-foreground: oklch(30% 0.065 266);
     --popover: oklch(99% 0.008 265);
     --popover-foreground: oklch(30% 0.065 266);
-    --surface-soft: oklch(100% 0 0 / 0.42);
+    --surface-soft: oklch(98% 0.01 265 / 0.5);
     --surface-strong: oklch(100% 0 0 / 0.74);
 
-    /* Marca: periwinkle suave */
+    /* Marca: pervinca de los assets */
     --brand: oklch(65% 0.09 265);
     --brand-deep: oklch(46% 0.12 266);
-    --primary: oklch(55% 0.11 265);
+    /* Pervinca claro (#a5bce6): rellenos decorativos, nunca texto. */
+    --brand-suave: oklch(79% 0.065 262);
+    /* Azul medio de las ilustraciones (#516eaa). Blanco encima: 4.8:1. */
+    --primary: oklch(55% 0.1 264);
     --primary-foreground: oklch(99% 0.004 265);
 
     /* Rosa suave para acentos decorativos */
@@ -68,6 +76,22 @@
     --input: oklch(100% 0 0 / 0.72);
     --ring: oklch(55% 0.11 265);
 
+    /* Tres tonos del isotipo (components/layout/isotipo.tsx). */
+    --isotipo-trazo: oklch(30% 0.06 266);
+    --isotipo-hoja: oklch(56% 0.1 263);
+    --isotipo-semilla: oklch(79% 0.065 262);
+
+    /* Movimiento. Curvas fuertes de salida: el elemento responde al instante
+       y se asienta despacio. Las salidas usan duraciones más cortas que las
+       entradas. */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-cajon: cubic-bezier(0.32, 0.72, 0, 1);
+    --dur-rapida: 150ms;
+    --dur-base: 220ms;
+    --dur-entrada: 320ms;
+    --dur-lenta: 700ms;
+
     --radius: 1.25rem;
     --sombra-suave: 0 14px 36px -22px color-mix(in oklab, oklch(30% 0.065 266) 38%, transparent);
     --sombra-elevada: 0 24px 60px -28px color-mix(in oklab, oklch(30% 0.065 266) 45%, transparent);
@@ -77,8 +101,8 @@
     --fondo-app: linear-gradient(
         160deg,
         oklch(21% 0.04 266) 0%,
-        oklch(19% 0.035 320) 55%,
-        oklch(17% 0.03 90) 100%
+        oklch(19% 0.035 275) 55%,
+        oklch(17% 0.03 255) 100%
     );
 
     --background: oklch(16% 0.035 265);
@@ -93,6 +117,7 @@
 
     --brand: oklch(76% 0.08 265);
     --brand-deep: oklch(84% 0.06 265);
+    --brand-suave: oklch(42% 0.07 264);
     --primary: oklch(76% 0.08 265);
     --primary-foreground: oklch(20% 0.04 266);
 
@@ -126,6 +151,10 @@
     --input: oklch(100% 0 0 / 0.1);
     --ring: oklch(76% 0.08 265);
 
+    --isotipo-trazo: oklch(90% 0.035 265);
+    --isotipo-hoja: oklch(74% 0.09 264);
+    --isotipo-semilla: oklch(50% 0.08 264);
+
     --sombra-suave: 0 14px 36px -22px oklch(0% 0 0 / 0.6);
     --sombra-elevada: 0 24px 60px -28px oklch(0% 0 0 / 0.7);
 }
@@ -148,6 +177,7 @@
 
     --color-brand: var(--brand);
     --color-brand-deep: var(--brand-deep);
+    --color-brand-suave: var(--brand-suave);
     --color-primary: var(--primary);
     --color-primary-foreground: var(--primary-foreground);
     --color-secondary: var(--secondary);
@@ -259,6 +289,164 @@
     }
 }
 
+/* =============================================================================
+   Movimiento
+   Solo se anima transform y opacity (no provocan reflujo). Todo entra al
+   montar el nodo, una sola vez: router.refresh() reconcilia los mismos nodos y
+   no repite la animación, mientras que un ítem nuevo con su propia key sí entra.
+   Las alertas críticas no usan nada de esto: la información clínica no espera.
+   ============================================================================= */
+
+/* Ángulo animable del anillo de gestación. */
+@property --progreso {
+    syntax: "<number>";
+    inherits: false;
+    initial-value: 0;
+}
+
+@keyframes aparecer {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+}
+
+@keyframes aparecer-escala {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+}
+
+@keyframes desaparecer-escala {
+    to {
+        opacity: 0;
+        transform: scale(0.97);
+    }
+}
+
+@keyframes fundido {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes fundido-salida {
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes subir-cajon {
+    from {
+        transform: translateY(100%);
+    }
+}
+
+@keyframes bajar-cajon {
+    to {
+        transform: translateY(100%);
+    }
+}
+
+@keyframes crecer-barra {
+    from {
+        transform: scaleY(0);
+    }
+}
+
+@keyframes llenar-anillo {
+    from {
+        --progreso: 0;
+    }
+}
+
+@keyframes brillo {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes rebote-icono {
+    50% {
+        transform: scale(1.06);
+    }
+}
+
+@layer components {
+    /* Entrada escalonada: style={{ "--i": n }} en cada elemento. El retraso se
+       corta en el sexto para que una lista larga no haga esperar (máx. 240 ms). */
+    .entrada {
+        animation: aparecer var(--dur-entrada) var(--ease-out) both;
+        animation-delay: calc(min(var(--i, 0), 6) * 40ms);
+    }
+
+    /* Respuesta inmediata al pulsar. */
+    .presionable {
+        transition-property: transform, color, background-color, border-color, box-shadow, opacity;
+        transition-duration: var(--dur-rapida);
+        transition-timing-function: var(--ease-out);
+    }
+
+    .presionable:active:not(:disabled) {
+        transform: scale(0.97);
+    }
+
+    /* Elevación al pasar el ratón; solo con puntero fino, porque en pantallas
+       táctiles el hover se queda pegado tras tocar. */
+    .elevable {
+        transition-property: transform, box-shadow, background-color, border-color;
+        transition-duration: var(--dur-base);
+        transition-timing-function: var(--ease-out);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .elevable:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--sombra-elevada);
+        }
+    }
+
+    /* Barras de las mini gráficas: crecen desde la base. */
+    .barra-crece {
+        transform-origin: bottom;
+        animation: crecer-barra var(--dur-lenta) var(--ease-out) both;
+        animation-delay: calc(min(var(--i, 0), 10) * 30ms);
+    }
+
+    /* Patrón de la gestante: solo detrás de su marco, tenue y desvanecido
+       hacia abajo para no competir con el contenido. */
+    [data-rol="gestante"] {
+        position: relative;
+        isolation: isolate;
+    }
+
+    [data-rol="gestante"]::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: 38rem;
+        z-index: -1;
+        pointer-events: none;
+        opacity: 0.07;
+        background-image: url("/marca/patron.v1.webp");
+        background-image: image-set(
+            url("/marca/patron.v1.avif") type("image/avif"),
+            url("/marca/patron.v1.webp") type("image/webp")
+        );
+        background-size: 384px auto;
+        mask-image: linear-gradient(to bottom, black, transparent);
+    }
+
+    .dark [data-rol="gestante"]::before {
+        opacity: 0.05;
+        filter: invert(1) hue-rotate(180deg);
+    }
+}
+
 /* Quien pide menos transparencia recibe superficies opacas y legibles. */
 @media (prefers-reduced-transparency: reduce) {
     .glass,
@@ -284,6 +472,7 @@
     *::before,
     *::after {
         animation-duration: 0.01ms !important;
+        animation-delay: 0s !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
@@ -291,6 +480,16 @@
 }
 
 @media print {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+    }
+
+    [data-rol="gestante"]::before {
+        content: none;
+    }
+
     .app-backdrop {
         background: white;
     }
