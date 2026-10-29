@@ -59,7 +59,7 @@ export default async function PaginaAlertas({
                 subtitulo="Avisos generados por los valores y síntomas que has registrado. Son orientativos, no un diagnóstico."
             />
 
-            <Tarjeta id={ANCLA_LISTA} className="scroll-mt-4">
+            <Tarjeta indice={0} id={ANCLA_LISTA} className="scroll-mt-4">
                 <Filtros
                     ruta="/alertas"
                     params={params}

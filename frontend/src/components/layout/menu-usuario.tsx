@@ -39,7 +39,7 @@ export function MenuUsuario({
                 <Menu.Content
                     align="end"
                     sideOffset={8}
-                    className="z-50 min-w-56 overflow-hidden rounded-2xl border border-border-firme bg-popover p-1.5 text-popover-foreground shadow-elevada"
+                    className="z-50 min-w-56 origin-[var(--radix-dropdown-menu-content-transform-origin)] overflow-hidden rounded-2xl border border-border-firme bg-popover p-1.5 text-popover-foreground shadow-elevada data-[state=open]:animate-[aparecer-escala_180ms_var(--ease-out)] data-[state=closed]:animate-[desaparecer-escala_120ms_var(--ease-out)_forwards]"
                 >
                     <div className="px-3 py-2">
                         <p className="truncate text-sm font-semibold">

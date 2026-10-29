@@ -40,7 +40,7 @@ export default async function PaginaAprendizaje({
 
             <div className="space-y-5">
                 {miSemana && miSemana.contenidos.length > 0 && (
-                    <Tarjeta>
+                    <Tarjeta indice={0}>
                         <EncabezadoTarjeta
                             seccion={`Semana ${miSemana.semana}`}
                             titulo="Para esta semana"
@@ -61,7 +61,11 @@ export default async function PaginaAprendizaje({
                     </Tarjeta>
                 )}
 
-                <Tarjeta id={ANCLA_LISTA} className="scroll-mt-4">
+                <Tarjeta
+                    indice={miSemana && miSemana.contenidos.length > 0 ? 1 : 0}
+                    id={ANCLA_LISTA}
+                    className="scroll-mt-4"
+                >
                     <EncabezadoTarjeta
                         seccion="Todos los contenidos"
                         titulo="Biblioteca"
@@ -145,9 +149,10 @@ function TarjetaContenido({
     return (
         <Link
             href={`/aprendizaje/${contenido.id}`}
-            className="glass-soft flex h-full items-start justify-between gap-3 rounded-2xl p-4 transition-colors hover:bg-surface-strong"
+            className="glass-soft elevable flex h-full items-start gap-3 rounded-2xl p-4 hover:bg-surface-strong"
         >
-            <span className="min-w-0">
+            <span aria-hidden className="miniatura-patron shrink-0" />
+            <span className="min-w-0 flex-1">
                 <span className="block font-medium text-balance">
                     {contenido.titulo}
                 </span>

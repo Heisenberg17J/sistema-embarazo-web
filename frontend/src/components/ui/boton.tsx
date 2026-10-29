@@ -4,7 +4,7 @@ import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
 const variantes = cva(
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-semibold transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0",
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-base font-semibold transition-[color,background-color,border-color,box-shadow,filter,opacity,transform] duration-150 ease-out active:not-disabled:scale-[0.97] sm:text-sm disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-5 sm:[&_svg]:size-4 [&_svg]:shrink-0",
     {
         variants: {
             variante: {
@@ -20,11 +20,11 @@ const variantes = cva(
                     "bg-destructive text-destructive-foreground hover:brightness-110",
             },
             tamano: {
-                sm: "h-9 px-4 text-sm",
-                md: "toque px-5 text-sm",
-                lg: "h-12 px-6 text-base",
+                sm: "h-11 px-4 sm:h-9",
+                md: "toque px-6 sm:px-5",
+                lg: "h-14 px-7 text-lg sm:h-12 sm:px-6 sm:text-base",
                 icono: "toque px-0",
-                iconoSm: "size-9 px-0",
+                iconoSm: "size-11 px-0 sm:size-9",
             },
             ancho: {
                 auto: "",
@@ -63,3 +63,10 @@ export function Boton({
 }
 
 export { variantes as variantesBoton };
+
+/**
+ * Presentación de un disparador de diálogo como tarjeta táctil en móvil
+ * (icono sobre el texto, 72 px de alto); desde sm vuelve a ser un botón normal.
+ */
+export const DISPARADOR_TARJETA =
+    "max-sm:h-auto max-sm:min-h-[4.5rem] max-sm:flex-col max-sm:gap-1.5 max-sm:rounded-2xl max-sm:px-3 max-sm:py-3 max-sm:text-base max-sm:[&_svg]:size-6";

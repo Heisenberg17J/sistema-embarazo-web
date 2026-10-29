@@ -2,10 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Plus, Save, TriangleAlert } from "lucide-react";
+import { Activity, Plus, Save, TriangleAlert } from "lucide-react";
 import { registrarSintoma, type ResultadoRegistro } from "@/acciones/registros";
 import { AvisoCritico } from "@/components/paneles/aviso-critico";
-import { Boton } from "@/components/ui/boton";
+import { Boton, DISPARADOR_TARJETA } from "@/components/ui/boton";
 import { AvisoExito } from "@/components/ui/aviso-exito";
 import { AvisoError, Campo } from "@/components/ui/campo";
 import { Dialogo } from "@/components/ui/dialogo";
@@ -27,9 +27,11 @@ interface Props {
     tipos: TipoSintoma[];
     contactoNombre?: string | null;
     contactoTelefono?: string | null;
+    /** "tarjeta": el disparador es una tarjeta táctil con icono en móvil (panel). */
+    presentacion?: "boton" | "tarjeta";
 }
 
-export function DialogoSintoma({ tipos, contactoNombre, contactoTelefono }: Props) {
+export function DialogoSintoma({ tipos, contactoNombre, contactoTelefono, presentacion = "boton" }: Props) {
     const router = useRouter();
     const [abierto, setAbierto] = useState(false);
     const [criticas, setCriticas] = useState<Alerta[]>([]);
@@ -49,8 +51,12 @@ export function DialogoSintoma({ tipos, contactoNombre, contactoTelefono }: Prop
 
     return (
         <>
-            <Boton variante="vidrio" onClick={() => setAbierto(true)}>
-                <Plus aria-hidden />
+            <Boton
+                variante="vidrio"
+                className={presentacion === "tarjeta" ? DISPARADOR_TARJETA : undefined}
+                onClick={() => setAbierto(true)}
+            >
+                {presentacion === "tarjeta" ? <Activity aria-hidden /> : <Plus aria-hidden />}
                 Síntoma
             </Boton>
 

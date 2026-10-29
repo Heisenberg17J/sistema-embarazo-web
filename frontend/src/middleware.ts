@@ -151,6 +151,6 @@ export async function middleware(req: NextRequest) {
 export const config = {
     // Se excluyen los recursos estáticos y las rutas de API internas.
     matcher: [
-        "/((?!api|_next/static|_next/image|favicon.ico|icono.svg|robots.txt|.*\\.(?:png|jpg|jpeg|svg|webp|ico)$).*)",
+        "/((?!api|_next/static|_next/image|favicon.ico|icono.svg|robots.txt|.*\\.(?:png|jpg|jpeg|svg|webp|avif|ico)$).*)",
     ],
 };

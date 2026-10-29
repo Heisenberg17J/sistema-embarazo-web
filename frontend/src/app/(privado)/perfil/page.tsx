@@ -45,7 +45,7 @@ export default async function PaginaPerfil() {
 
             <div className="space-y-5">
                 {/* Datos que no se editan desde aquí: los corrige el administrador. */}
-                <Tarjeta>
+                <Tarjeta indice={0}>
                     <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
                             <h2 className="font-display text-xl font-semibold">
@@ -110,7 +110,7 @@ export default async function PaginaPerfil() {
                     )}
                 />
 
-                <Tarjeta>
+                <Tarjeta indice={1}>
                     <h2 className="font-medium">Tus datos y privacidad</h2>
                     <p className="mt-1 text-sm text-muted-foreground">
                         Tienes derecho a conocer qué datos guardamos de ti y a pedir que
@@ -151,7 +151,7 @@ export default async function PaginaPerfil() {
                     )}
                 </Tarjeta>
 
-                <Tarjeta>
+                <Tarjeta indice={2}>
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                             <h2 className="font-medium">Contraseña</h2>

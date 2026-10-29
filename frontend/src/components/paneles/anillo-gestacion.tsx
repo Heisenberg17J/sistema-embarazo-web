@@ -1,8 +1,11 @@
+import type { CSSProperties } from "react";
 import { progresoGestacion } from "@/lib/formato";
 
 /**
  * Anillo de progreso con la semana de gestación, como en el mockup.
- * Se dibuja con un conic-gradient: no necesita SVG ni JavaScript.
+ * Se dibuja con un conic-gradient: no necesita SVG ni JavaScript. El valor
+ * final va en la variable --progreso (grados) y la clase `.anillo-gestacion`
+ * la anima de 0 a ese valor una sola vez, al montar.
  */
 export function AnilloGestacion({
     semana,
@@ -17,10 +20,8 @@ export function AnilloGestacion({
 
     return (
         <div
-            className="relative grid size-44 shrink-0 place-items-center rounded-full"
-            style={{
-                background: `conic-gradient(var(--brand) 0deg ${grados}deg, var(--surface-soft) ${grados}deg 360deg)`,
-            }}
+            className="anillo-gestacion relative grid size-44 shrink-0 place-items-center rounded-full"
+            style={{ "--progreso": grados } as CSSProperties}
             role="img"
             aria-label={
                 semana == null
@@ -28,7 +29,7 @@ export function AnilloGestacion({
                     : `Semana ${semana} de 40, ${progreso} por ciento del embarazo`
             }
         >
-            <div className="absolute inset-3 grid place-items-center rounded-full bg-surface-strong text-center">
+            <div className="absolute inset-3 grid place-items-center rounded-full bg-popover text-center">
                 <div>
                     <p className="font-display text-5xl font-semibold leading-none">
                         {semana ?? "—"}

@@ -46,3 +46,6 @@ next-env.d.ts
 e2e/capturas/
 test-results/
 playwright-report/
+
+# Originales de marca (pesados); solo se suben las versiones optimizadas de public/marca
+/assets-fuente/

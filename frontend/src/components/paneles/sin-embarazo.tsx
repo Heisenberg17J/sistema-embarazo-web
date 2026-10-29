@@ -9,14 +9,15 @@ import { Vacio } from "@/components/ui/vacio";
  * registrado un embarazo: sin él no hay nada que mostrar en ninguna.
  */
 export function SinEmbarazo({
-    descripcion = "Con la fecha de tu última menstruación calculamos tu semana de gestación y la fecha probable de parto.",
+    descripcion = "Cuéntanos cuándo empezó y te acompañamos semana a semana. Con la fecha de tu última menstruación calculamos tu semana de gestación y la fecha probable de parto.",
 }: {
     descripcion?: string;
 }) {
     return (
-        <Tarjeta>
+        <Tarjeta indice={0}>
             <Vacio
                 icono={Baby}
+                ilustracion="color"
                 titulo="Aún no has registrado tu embarazo"
                 descripcion={descripcion}
                 accion={

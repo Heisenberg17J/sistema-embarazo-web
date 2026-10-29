@@ -97,6 +97,7 @@ export default async function PaginaPanel() {
         <>
             <Saludo
                 nombre={sesion.nombre}
+                ilustracion
                 subtitulo={
                     embarazo.semana_actual != null
                         ? `Aquí tienes el resumen de tu semana ${embarazo.semana_actual}.`
@@ -106,10 +107,12 @@ export default async function PaginaPanel() {
                     <>
                         <DialogoSintoma
                             tipos={catalogoSintoma}
+                            presentacion="tarjeta"
                             {...contacto}
                         />
                         <DialogoMedicion
                             tipos={catalogoMedicion.filter((t) => t.registrable_por_gestante)}
+                            presentacion="tarjeta"
                             {...contacto}
                         />
                     </>
@@ -123,7 +126,7 @@ export default async function PaginaPanel() {
 
                 {/* --- Gestación y alertas ------------------------------------ */}
                 <div className="grid items-start gap-5 lg:grid-cols-3">
-                    <Tarjeta className="lg:col-span-2">
+                    <Tarjeta indice={0} className="tarjeta-ondas lg:col-span-2">
                         <EncabezadoTarjeta
                             seccion="Tu gestación"
                             accion={
@@ -335,9 +338,9 @@ export default async function PaginaPanel() {
 
                 {/* --- Evolución y contenido de la semana --------------------- */}
                 <div className="grid items-start gap-5 lg:grid-cols-3">
-                    <MiniEvolucion serie={serie} />
+                    <MiniEvolucion serie={serie} indice={1} />
 
-                    <Tarjeta>
+                    <Tarjeta indice={2}>
                         <EncabezadoTarjeta
                             seccion={
                                 embarazo.semana_actual != null
@@ -398,7 +401,7 @@ export default async function PaginaPanel() {
 
                 {/* --- Síntomas y último control ------------------------------ */}
                 <div className="grid items-start gap-5 lg:grid-cols-3">
-                    <Tarjeta className="lg:col-span-2">
+                    <Tarjeta indice={3} className="lg:col-span-2">
                         <EncabezadoTarjeta
                             seccion="Síntomas recientes"
                             accion={
@@ -444,7 +447,7 @@ export default async function PaginaPanel() {
                         )}
                     </Tarjeta>
 
-                    <Tarjeta>
+                    <Tarjeta indice={4}>
                         <EncabezadoTarjeta seccion="Último control" />
                         {control ? (
                             <div className="mt-3">

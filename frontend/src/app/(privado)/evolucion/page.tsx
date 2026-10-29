@@ -94,9 +94,10 @@ export default async function PaginaEvolucion({
             />
 
             {!hayAlgo ? (
-                <Tarjeta>
+                <Tarjeta indice={0}>
                     <Vacio
                         icono={TrendingUp}
+                        ilustracion
                         titulo="Todavía no hay mediciones"
                         descripcion="Registra tu peso o tu presión arterial y aquí verás cómo evolucionan a lo largo del embarazo."
                     />
@@ -104,7 +105,7 @@ export default async function PaginaEvolucion({
             ) : (
                 <div className="space-y-5">
                     {embarazo.peso && (
-                        <Tarjeta>
+                        <Tarjeta indice={0}>
                             <EncabezadoTarjeta
                                 seccion="Peso"
                                 titulo="Tu ganancia de peso"
@@ -151,6 +152,7 @@ export default async function PaginaEvolucion({
 
                     {conDatos(PESO) && (
                         <TarjetaGrafica
+                            indice={1}
                             seccion="Peso corporal"
                             titulo="Peso por semana"
                             icono={<Scale className="size-4" aria-hidden />}
@@ -163,6 +165,7 @@ export default async function PaginaEvolucion({
 
                     {PRESION.some(conDatos) && (
                         <TarjetaGrafica
+                            indice={2}
                             seccion="Presión arterial"
                             titulo="Sistólica y diastólica"
                             icono={<HeartPulse className="size-4" aria-hidden />}
@@ -174,7 +177,7 @@ export default async function PaginaEvolucion({
                     )}
 
                     {recientes.datos.length > 0 && (
-                        <Tarjeta>
+                        <Tarjeta indice={3}>
                             <EncabezadoTarjeta
                                 seccion="Tus registros"
                                 titulo="Últimos registros"
@@ -246,6 +249,7 @@ export default async function PaginaEvolucion({
                             <GraficaEvolucion
                                 series={buscar([otroActivo.codigo])}
                                 unidad={otroActivo.unidad}
+                                animar={false}
                             />
                             <UltimaLectura serie={serie} tipo={otroActivo.codigo} />
                         </Tarjeta>
@@ -257,6 +261,7 @@ export default async function PaginaEvolucion({
 }
 
 function TarjetaGrafica({
+    indice,
     seccion,
     titulo,
     icono,
@@ -265,6 +270,7 @@ function TarjetaGrafica({
     tipos,
     unidad,
 }: {
+    indice: number;
     seccion: string;
     titulo: string;
     icono: React.ReactNode;
@@ -274,7 +280,7 @@ function TarjetaGrafica({
     unidad: string;
 }) {
     return (
-        <Tarjeta>
+        <Tarjeta indice={indice}>
             <EncabezadoTarjeta
                 seccion={seccion}
                 titulo={

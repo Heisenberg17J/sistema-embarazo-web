@@ -66,10 +66,11 @@ export default async function PaginaSintomas({
                 }
             />
 
-            <Tarjeta id={ANCLA_LISTA} className="scroll-mt-4">
+            <Tarjeta indice={0} id={ANCLA_LISTA} className="scroll-mt-4">
                 {lista.datos.length === 0 ? (
                     <Vacio
                         icono={Activity}
+                        ilustracion
                         titulo="Todavía no has registrado síntomas"
                         descripcion="Anotar cómo te sientes ayuda a tu profesional a entender cómo va tu embarazo. Si algo te preocupa, no esperes al control."
                     />

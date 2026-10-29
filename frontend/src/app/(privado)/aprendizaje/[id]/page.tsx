@@ -42,7 +42,7 @@ export default async function PaginaContenido({
                 </Link>
             </Boton>
 
-            <Tarjeta>
+            <Tarjeta indice={0}>
                 <div className="flex flex-wrap items-center gap-2">
                     {contenido.categoria && (
                         <Insignia tono="marca">{contenido.categoria}</Insignia>

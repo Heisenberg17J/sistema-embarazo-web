@@ -45,10 +45,11 @@ export default async function PaginaControles({
                 subtitulo="Lo que tu profesional de salud registró en cada consulta, de lo más reciente a lo más antiguo."
             />
 
-            <Tarjeta id={ANCLA_LISTA} className="scroll-mt-4">
+            <Tarjeta indice={0} id={ANCLA_LISTA} className="scroll-mt-4">
                 {lista.datos.length === 0 ? (
                     <Vacio
                         icono={ClipboardList}
+                        ilustracion
                         titulo="Todavía no hay controles registrados"
                         descripcion="Después de cada consulta, tu profesional registrará aquí las mediciones y sus observaciones."
                     />

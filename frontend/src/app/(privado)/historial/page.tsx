@@ -60,7 +60,7 @@ export default async function PaginaHistorial({
                 subtitulo="Todo tu seguimiento en orden, de lo más reciente a lo más antiguo."
             />
 
-            <Tarjeta id={ANCLA_LISTA} className="scroll-mt-4">
+            <Tarjeta indice={0} id={ANCLA_LISTA} className="scroll-mt-4">
                 <Filtros
                     ruta="/historial"
                     params={params}

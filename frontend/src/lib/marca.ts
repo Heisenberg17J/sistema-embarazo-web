@@ -9,8 +9,6 @@ export const MARCA = {
     nombre: "Seguimiento del Embarazo",
     /** Para espacios estrechos, como el encabezado en móvil. */
     nombreCorto: "Embarazo",
-    /** Letra del logo circular. */
-    inicial: "E",
     lema: "Seguimiento del embarazo",
     descripcion:
         "Organiza y visualiza la información de tu embarazo: controles, citas, mediciones y alertas.",

@@ -5,20 +5,25 @@
    Tokens tomados del mockup de referencia (Tailwind v4 + shadcn).
    Los colores de TEXTO se oscurecieron respecto al mockup para cumplir
    contraste AA 4.5:1 sobre las superficies de vidrio translúcidas.
+
+   Identidad visual: la paleta sale de los assets de marca (public/marca),
+   pervinca #a5bce6, azul medio #516eaa y marino #212e4e, medidos en oklch.
+   El rosa del mockup desapareció del fondo; queda solo como acento.
    ============================================================================= */
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-    /* Fondo degradado de la aplicación */
+    /* Fondo degradado de la aplicación: pervinca de los assets que se aclara
+       hacia un blanco apenas cálido. */
     --fondo-app: linear-gradient(
         160deg,
-        oklch(91% 0.035 255) 0%,
-        oklch(91% 0.035 350) 48%,
-        oklch(96% 0.018 90) 100%
+        oklch(90.5% 0.04 266) 0%,
+        oklch(94% 0.024 270) 55%,
+        oklch(96.5% 0.014 80) 100%
     );
 
-    --background: oklch(94% 0.02 265);
+    --background: oklch(94% 0.022 268);
     --foreground: oklch(30% 0.065 266);
 
     /* Superficies de vidrio: blanco translúcido sobre el degradado */
@@ -26,13 +31,16 @@
     --card-foreground: oklch(30% 0.065 266);
     --popover: oklch(99% 0.008 265);
     --popover-foreground: oklch(30% 0.065 266);
-    --surface-soft: oklch(100% 0 0 / 0.42);
+    --surface-soft: oklch(98% 0.01 265 / 0.5);
     --surface-strong: oklch(100% 0 0 / 0.74);
 
-    /* Marca: periwinkle suave */
+    /* Marca: pervinca de los assets */
     --brand: oklch(65% 0.09 265);
     --brand-deep: oklch(46% 0.12 266);
-    --primary: oklch(55% 0.11 265);
+    /* Pervinca claro (#a5bce6): rellenos decorativos, nunca texto. */
+    --brand-suave: oklch(79% 0.065 262);
+    /* Azul medio de las ilustraciones (#516eaa). Blanco encima: 4.8:1. */
+    --primary: oklch(55% 0.1 264);
     --primary-foreground: oklch(99% 0.004 265);
 
     /* Rosa suave para acentos decorativos */
@@ -68,6 +76,22 @@
     --input: oklch(100% 0 0 / 0.72);
     --ring: oklch(55% 0.11 265);
 
+    /* Tres tonos del isotipo (components/layout/isotipo.tsx). */
+    --isotipo-trazo: oklch(30% 0.06 266);
+    --isotipo-hoja: oklch(56% 0.1 263);
+    --isotipo-semilla: oklch(79% 0.065 262);
+
+    /* Movimiento. Curvas fuertes de salida: el elemento responde al instante
+       y se asienta despacio. Las salidas usan duraciones más cortas que las
+       entradas. */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-cajon: cubic-bezier(0.32, 0.72, 0, 1);
+    --dur-rapida: 150ms;
+    --dur-base: 220ms;
+    --dur-entrada: 320ms;
+    --dur-lenta: 700ms;
+
     --radius: 1.25rem;
     --sombra-suave: 0 14px 36px -22px color-mix(in oklab, oklch(30% 0.065 266) 38%, transparent);
     --sombra-elevada: 0 24px 60px -28px color-mix(in oklab, oklch(30% 0.065 266) 45%, transparent);
@@ -77,8 +101,8 @@
     --fondo-app: linear-gradient(
         160deg,
         oklch(21% 0.04 266) 0%,
-        oklch(19% 0.035 320) 55%,
-        oklch(17% 0.03 90) 100%
+        oklch(19% 0.035 275) 55%,
+        oklch(17% 0.03 255) 100%
     );
 
     --background: oklch(16% 0.035 265);
@@ -93,6 +117,7 @@
 
     --brand: oklch(76% 0.08 265);
     --brand-deep: oklch(84% 0.06 265);
+    --brand-suave: oklch(42% 0.07 264);
     --primary: oklch(76% 0.08 265);
     --primary-foreground: oklch(20% 0.04 266);
 
@@ -126,6 +151,10 @@
     --input: oklch(100% 0 0 / 0.1);
     --ring: oklch(76% 0.08 265);
 
+    --isotipo-trazo: oklch(90% 0.035 265);
+    --isotipo-hoja: oklch(74% 0.09 264);
+    --isotipo-semilla: oklch(50% 0.08 264);
+
     --sombra-suave: 0 14px 36px -22px oklch(0% 0 0 / 0.6);
     --sombra-elevada: 0 24px 60px -28px oklch(0% 0 0 / 0.7);
 }
@@ -148,6 +177,7 @@
 
     --color-brand: var(--brand);
     --color-brand-deep: var(--brand-deep);
+    --color-brand-suave: var(--brand-suave);
     --color-primary: var(--primary);
     --color-primary-foreground: var(--primary-foreground);
     --color-secondary: var(--secondary);
@@ -189,6 +219,11 @@
 
     html {
         -webkit-text-size-adjust: 100%;
+    }
+
+    /* Interlineado cómodo para leer en pantallas pequeñas. */
+    body {
+        line-height: 1.55;
     }
 
     body {
@@ -242,8 +277,393 @@
 
     /* Área táctil mínima de 44px para manos con prisa o malestar. */
     .toque {
-        min-height: 2.75rem;
-        min-width: 2.75rem;
+        min-height: 3rem;
+        min-width: 3rem;
+    }
+
+    @media (min-width: 40rem) {
+        .toque {
+            min-height: 2.75rem;
+            min-width: 2.75rem;
+        }
+    }
+}
+
+/* =============================================================================
+   Movimiento
+   Solo se anima transform y opacity (no provocan reflujo). Todo entra al
+   montar el nodo, una sola vez: router.refresh() reconcilia los mismos nodos y
+   no repite la animación, mientras que un ítem nuevo con su propia key sí entra.
+   Las alertas críticas no usan nada de esto: la información clínica no espera.
+   ============================================================================= */
+
+/* Ángulo animable del anillo de gestación. */
+@property --progreso {
+    syntax: "<number>";
+    inherits: false;
+    initial-value: 0;
+}
+
+@keyframes aparecer {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+}
+
+@keyframes aparecer-escala {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+}
+
+@keyframes desaparecer-escala {
+    to {
+        opacity: 0;
+        transform: scale(0.97);
+    }
+}
+
+@keyframes fundido {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes fundido-salida {
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes subir-cajon {
+    from {
+        transform: translateY(100%);
+    }
+}
+
+@keyframes bajar-cajon {
+    to {
+        transform: translateY(100%);
+    }
+}
+
+@keyframes crecer-barra {
+    from {
+        transform: scaleY(0);
+    }
+}
+
+@keyframes llenar-anillo {
+    from {
+        --progreso: 0;
+    }
+}
+
+@keyframes brillo {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes rebote-icono {
+    50% {
+        transform: scale(1.06);
+    }
+}
+
+@layer components {
+    /* Entrada escalonada: style={{ "--i": n }} en cada elemento. El retraso se
+       corta en el sexto para que una lista larga no haga esperar (máx. 240 ms). */
+    .entrada {
+        animation: aparecer var(--dur-entrada) var(--ease-out) both;
+        animation-delay: calc(min(var(--i, 0), 6) * 40ms);
+    }
+
+    /* Respuesta inmediata al pulsar. */
+    .presionable {
+        transition-property: transform, color, background-color, border-color, box-shadow, opacity;
+        transition-duration: var(--dur-rapida);
+        transition-timing-function: var(--ease-out);
+    }
+
+    .presionable:active:not(:disabled) {
+        transform: scale(0.97);
+    }
+
+    /* Elevación al pasar el ratón; solo con puntero fino, porque en pantallas
+       táctiles el hover se queda pegado tras tocar. */
+    .elevable {
+        transition-property: transform, box-shadow, background-color, border-color;
+        transition-duration: var(--dur-base);
+        transition-timing-function: var(--ease-out);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .elevable:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--sombra-elevada);
+        }
+    }
+
+    /* Barras de las mini gráficas: crecen desde la base. */
+    .barra-crece {
+        transform-origin: bottom;
+        animation: crecer-barra var(--dur-lenta) var(--ease-out) both;
+        animation-delay: calc(min(var(--i, 0), 10) * 30ms);
+    }
+
+    /* Arte lineal de la gestante recortado del fondo de marca (640x357): la
+       figura ocupa aprox. del 69 % al 97 % del ancho. Caja de tamaño fijo, sin
+       salto de layout; los bordes se desvanecen para no dejar un rectángulo. */
+    .ilustracion-gestante {
+        display: block;
+        width: 7rem;
+        height: 9rem;
+        background-image: url("/marca/fondo-linea-640.v1.webp");
+        background-image: image-set(
+            url("/marca/fondo-linea-640.v1.avif") type("image/avif"),
+            url("/marca/fondo-linea-640.v1.webp") type("image/webp")
+        );
+        background-repeat: no-repeat;
+        background-size: 355px 198px;
+        background-position: -238px -27px;
+        mask-image: radial-gradient(closest-side, black 62%, transparent);
+    }
+
+    .dark .ilustracion-gestante {
+        opacity: 0.45;
+        filter: invert(1) hue-rotate(180deg);
+    }
+
+    /* Patrón de la gestante: solo en sus pantallas, tenue y desvanecido hacia
+       abajo para no competir con el contenido. Va en el body (y no en un pseudo-elemento del marco) porque Chrome no
+       cuenta los fondos del body como candidatos a LCP: en un pseudo-elemento,
+       este patrón decorativo pasaba a ser el LCP del panel y lo retrasaba
+       ~250 ms en redes lentas. La opacidad (7 %) y el desvanecido hacia abajo
+       vienen horneados en la imagen, porque una capa de fondo no admite
+       opacity ni mask. Sin :has, simplemente no hay patrón. En oscuro se omite. */
+    :root:not(.dark) body:has([data-rol="gestante"]) {
+        background-image: url("/marca/patron-tenue.v1.webp"), var(--fondo-app);
+        background-image:
+            image-set(
+                url("/marca/patron-tenue.v1.avif") type("image/avif"),
+                url("/marca/patron-tenue.v1.webp") type("image/webp")
+            ),
+            var(--fondo-app);
+        background-size: 384px auto, auto;
+        background-repeat: repeat-x, no-repeat;
+        background-position: top left, 0 0;
+        background-attachment: scroll, fixed;
+    }
+
+    /* Línea de la gestante del fondo de marca, muy tenue, para la cabecera del
+       panel del profesional (solo lg+, decorativa). Variante de 1280 px mostrada
+       a un cuarto (320x178): la figura queda entre x 220-310 e y 27-159. */
+    .fondo-linea-tenue {
+        display: block;
+        width: 6rem;
+        height: 8.5rem;
+        opacity: 0.3;
+        background-image: url("/marca/fondo-linea-1280.v1.webp");
+        background-image: image-set(
+            url("/marca/fondo-linea-1280.v1.avif") type("image/avif"),
+            url("/marca/fondo-linea-1280.v1.webp") type("image/webp")
+        );
+        background-repeat: no-repeat;
+        background-size: 320px 178px;
+        background-position: -216px -25px;
+        mask-image: radial-gradient(closest-side, black 55%, transparent);
+    }
+
+    .dark .fondo-linea-tenue {
+        opacity: 0.2;
+        filter: invert(1) hue-rotate(180deg);
+    }
+
+    /* Ilustración en color de la gestante (560x696): caja de proporción fija,
+       el ancho lo pone quien la usa. Sobre el modo oscuro lleva un disco claro
+       detrás, porque el pelo marino se perdería contra el fondo. */
+    .ilustracion-color {
+        display: block;
+        aspect-ratio: 560 / 696;
+        --ilustracion-webp: url("/marca/ilustracion-gestante-sm.v1.webp");
+        --ilustracion: image-set(
+            url("/marca/ilustracion-gestante-sm.v1.avif") type("image/avif"),
+            url("/marca/ilustracion-gestante-sm.v1.webp") type("image/webp")
+        );
+        background-image: var(--ilustracion-webp);
+        background-image: var(--ilustracion);
+        background-repeat: no-repeat;
+        background-size: contain;
+        background-position: center;
+    }
+
+    /* Para cajas de más de ~120 px de ancho (panel del login, vacíos). */
+    .ilustracion-color.ilustracion-grande {
+        --ilustracion-webp: url("/marca/ilustracion-gestante.v1.webp");
+        --ilustracion: image-set(
+            url("/marca/ilustracion-gestante.v1.avif") type("image/avif"),
+            url("/marca/ilustracion-gestante.v1.webp") type("image/webp")
+        );
+    }
+
+    .dark .ilustracion-color {
+        background-image:
+            var(--ilustracion-webp),
+            radial-gradient(closest-side, oklch(93% 0.03 265 / 0.6) 45%, transparent);
+        background-image:
+            var(--ilustracion),
+            radial-gradient(closest-side, oklch(93% 0.03 265 / 0.6) 45%, transparent);
+    }
+
+    /* Panel ilustrado de las pantallas públicas: colinas de la marca de fondo
+       (variante de 640 px; la de 1280 solo en pantallas anchas) y el patrón
+       muy tenue encima. El fondo vive en pseudo-elementos para poder invertirlo
+       en modo oscuro sin tocar el texto. */
+    .panel-colinas {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+    }
+
+    .panel-colinas::before,
+    .panel-colinas::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    .panel-colinas::before {
+        background-color: oklch(92% 0.03 266);
+        background-image: url("/marca/fondo-colinas-640.v1.webp");
+        background-image: image-set(
+            url("/marca/fondo-colinas-640.v1.avif") type("image/avif"),
+            url("/marca/fondo-colinas-640.v1.webp") type("image/webp")
+        );
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: 42% 100%;
+    }
+
+    @media (min-width: 40rem) {
+        .panel-colinas::before {
+            background-image: url("/marca/fondo-colinas-1280.v1.webp");
+            background-image: image-set(
+                url("/marca/fondo-colinas-1280.v1.avif") type("image/avif"),
+                url("/marca/fondo-colinas-1280.v1.webp") type("image/webp")
+            );
+        }
+    }
+
+    .panel-colinas::after {
+        opacity: 0.05;
+        background-image: url("/marca/patron.v1.webp");
+        background-image: image-set(
+            url("/marca/patron.v1.avif") type("image/avif"),
+            url("/marca/patron.v1.webp") type("image/webp")
+        );
+        background-size: 320px auto;
+    }
+
+    .dark .panel-colinas::before {
+        filter: invert(1) hue-rotate(180deg);
+        opacity: 0.85;
+    }
+
+    .dark .panel-colinas::after {
+        opacity: 0.04;
+        filter: invert(1) hue-rotate(180deg);
+    }
+
+    /* Tarjeta principal del panel: las olas de la marca detrás del vidrio.
+       La zona marino de la imagen queda arriba a la izquierda, justo bajo el
+       encabezado, así que se espeja (arriba a la derecha) y se aclara hasta
+       dejar el texto en contraste AA. La franja mide lo que la imagen
+       (proporción 640:357) y se desvanece hacia abajo. */
+    .tarjeta-ondas {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+    }
+
+    .tarjeta-ondas::before {
+        content: "";
+        position: absolute;
+        inset: auto auto 0 0;
+        width: 100%;
+        aspect-ratio: 640 / 357;
+        z-index: -1;
+        pointer-events: none;
+        opacity: 0.85;
+        background-image: url("/marca/fondo-ondas-640.v1.webp");
+        background-image: image-set(
+            url("/marca/fondo-ondas-640.v1.avif") type("image/avif"),
+            url("/marca/fondo-ondas-640.v1.webp") type("image/webp")
+        );
+        background-repeat: no-repeat;
+        /* Ampliada y anclada a la derecha: la esquina marino, que sobre el
+           vidrio blanco se agrisaba, queda fuera y solo entran las olas. */
+        background-size: 165% 115%;
+        background-position: right top;
+        /* Volteada en vertical: las olas quedan abajo, detrás del anillo (que es
+           opaco), y se desvanecen hacia el texto. */
+        transform: scaleY(-1);
+        /* La máscara se aplica antes del volteo: "0 0" acaba abajo a la izquierda. */
+        mask-image: radial-gradient(130% 100% at 0 0, black 25%, transparent 65%);
+    }
+
+    @media (min-width: 40rem) {
+        .tarjeta-ondas::before {
+            background-image: url("/marca/fondo-ondas-1280.v1.webp");
+            background-image: image-set(
+                url("/marca/fondo-ondas-1280.v1.avif") type("image/avif"),
+                url("/marca/fondo-ondas-1280.v1.webp") type("image/webp")
+            );
+        }
+    }
+
+    .dark .tarjeta-ondas::before {
+        opacity: 0.16;
+        filter: invert(1) hue-rotate(180deg);
+    }
+
+    /* Anillo de gestación: --progreso (grados) lo fija el componente en línea y
+       el keyframe lo lleva desde 0 al montar. Sin @property o con movimiento
+       reducido se ve lleno al instante. */
+    .anillo-gestacion {
+        background: conic-gradient(
+            var(--brand) 0deg calc(var(--progreso) * 1deg),
+            color-mix(in oklab, var(--brand-suave) 55%, transparent) calc(var(--progreso) * 1deg) 360deg
+        );
+        animation: llenar-anillo 900ms var(--ease-out) both;
+    }
+
+    /* Miniatura del patrón de marca para las tarjetas de contenido. */
+    .miniatura-patron {
+        display: block;
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 1rem;
+        background-color: color-mix(in oklab, var(--brand-suave) 30%, transparent);
+        background-image: url("/marca/patron.v1.webp");
+        background-image: image-set(
+            url("/marca/patron.v1.avif") type("image/avif"),
+            url("/marca/patron.v1.webp") type("image/webp")
+        );
+        background-size: 128px auto;
+        background-position: center;
+    }
+
+    .dark .miniatura-patron {
+        filter: invert(1) hue-rotate(180deg);
+        opacity: 0.6;
     }
 }
 
@@ -272,6 +692,7 @@
     *::before,
     *::after {
         animation-duration: 0.01ms !important;
+        animation-delay: 0s !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
@@ -279,6 +700,16 @@
 }
 
 @media print {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+    }
+
+    body:has([data-rol="gestante"]) {
+        background-image: none;
+    }
+
     .app-backdrop {
         background: white;
     }
