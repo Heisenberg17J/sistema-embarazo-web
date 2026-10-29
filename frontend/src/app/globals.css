@@ -440,33 +440,25 @@
         filter: invert(1) hue-rotate(180deg);
     }
 
-    /* Patrón de la gestante: solo detrás de su marco, tenue y desvanecido
-       hacia abajo para no competir con el contenido. */
-    [data-rol="gestante"] {
-        position: relative;
-        isolation: isolate;
-    }
-
-    [data-rol="gestante"]::before {
-        content: "";
-        position: absolute;
-        inset: 0 0 auto;
-        height: 38rem;
-        z-index: -1;
-        pointer-events: none;
-        opacity: 0.07;
-        background-image: url("/marca/patron.v1.webp");
-        background-image: image-set(
-            url("/marca/patron.v1.avif") type("image/avif"),
-            url("/marca/patron.v1.webp") type("image/webp")
-        );
-        background-size: 384px auto;
-        mask-image: linear-gradient(to bottom, black, transparent);
-    }
-
-    .dark [data-rol="gestante"]::before {
-        opacity: 0.05;
-        filter: invert(1) hue-rotate(180deg);
+    /* Patrón de la gestante: solo en sus pantallas, tenue y desvanecido hacia
+       abajo para no competir con el contenido. Va en el body (y no en un pseudo-elemento del marco) porque Chrome no
+       cuenta los fondos del body como candidatos a LCP: en un pseudo-elemento,
+       este patrón decorativo pasaba a ser el LCP del panel y lo retrasaba
+       ~250 ms en redes lentas. La opacidad (7 %) y el desvanecido hacia abajo
+       vienen horneados en la imagen, porque una capa de fondo no admite
+       opacity ni mask. Sin :has, simplemente no hay patrón. En oscuro se omite. */
+    :root:not(.dark) body:has([data-rol="gestante"]) {
+        background-image: url("/marca/patron-tenue.v1.webp"), var(--fondo-app);
+        background-image:
+            image-set(
+                url("/marca/patron-tenue.v1.avif") type("image/avif"),
+                url("/marca/patron-tenue.v1.webp") type("image/webp")
+            ),
+            var(--fondo-app);
+        background-size: 384px auto, auto;
+        background-repeat: repeat-x, no-repeat;
+        background-position: top left, 0 0;
+        background-attachment: scroll, fixed;
     }
 
     /* Línea de la gestante del fondo de marca, muy tenue, para la cabecera del
@@ -499,25 +491,33 @@
     .ilustracion-color {
         display: block;
         aspect-ratio: 560 / 696;
-        background-image: url("/marca/ilustracion-gestante.v1.webp");
-        background-image: image-set(
-            url("/marca/ilustracion-gestante.v1.avif") type("image/avif"),
-            url("/marca/ilustracion-gestante.v1.webp") type("image/webp")
+        --ilustracion-webp: url("/marca/ilustracion-gestante-sm.v1.webp");
+        --ilustracion: image-set(
+            url("/marca/ilustracion-gestante-sm.v1.avif") type("image/avif"),
+            url("/marca/ilustracion-gestante-sm.v1.webp") type("image/webp")
         );
+        background-image: var(--ilustracion-webp);
+        background-image: var(--ilustracion);
         background-repeat: no-repeat;
         background-size: contain;
         background-position: center;
     }
 
+    /* Para cajas de más de ~120 px de ancho (panel del login, vacíos). */
+    .ilustracion-color.ilustracion-grande {
+        --ilustracion-webp: url("/marca/ilustracion-gestante.v1.webp");
+        --ilustracion: image-set(
+            url("/marca/ilustracion-gestante.v1.avif") type("image/avif"),
+            url("/marca/ilustracion-gestante.v1.webp") type("image/webp")
+        );
+    }
+
     .dark .ilustracion-color {
         background-image:
-            url("/marca/ilustracion-gestante.v1.webp"),
+            var(--ilustracion-webp),
             radial-gradient(closest-side, oklch(93% 0.03 265 / 0.6) 45%, transparent);
         background-image:
-            image-set(
-                url("/marca/ilustracion-gestante.v1.avif") type("image/avif"),
-                url("/marca/ilustracion-gestante.v1.webp") type("image/webp")
-            ),
+            var(--ilustracion),
             radial-gradient(closest-side, oklch(93% 0.03 265 / 0.6) 45%, transparent);
     }
 
@@ -706,8 +706,8 @@
         animation: none !important;
     }
 
-    [data-rol="gestante"]::before {
-        content: none;
+    body:has([data-rol="gestante"]) {
+        background-image: none;
     }
 
     .app-backdrop {

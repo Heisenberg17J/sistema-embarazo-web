@@ -1,3 +1,4 @@
+import { preload } from "react-dom";
 import { Logo } from "@/components/layout/logo";
 import { PieDescargo } from "@/components/layout/pie-descargo";
 import { MARCA } from "@/lib/marca";
@@ -13,6 +14,7 @@ export default function LayoutPublico({
 }: {
     children: React.ReactNode;
 }) {
+    precargarIlustraciones();
     return (
         <div className="min-h-dvh lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
             {/* Escritorio: panel a toda la altura que acompaña al desplazamiento. */}
@@ -28,7 +30,7 @@ export default function LayoutPublico({
                     </div>
                     <span
                         aria-hidden
-                        className="ilustracion-color w-full max-w-[22rem] max-h-[52dvh]"
+                        className="ilustracion-color ilustracion-grande w-full max-w-[22rem] max-h-[52dvh]"
                     />
                 </div>
             </aside>
@@ -52,4 +54,19 @@ export default function LayoutPublico({
             </div>
         </div>
     );
+}
+
+/**
+ * Las imágenes del panel son fondos CSS: el navegador no las descubre hasta
+ * tener la hoja de estilos y llegaban después del texto, retrasando el LCP en
+ * redes lentas. La precarga las pide junto al HTML, solo en el tamaño que se
+ * va a usar.
+ */
+function precargarIlustraciones() {
+    const movil = "(max-width: 63.99rem)";
+    const escritorio = "(min-width: 64rem)";
+    const avif = { as: "image", type: "image/avif", fetchPriority: "high" } as const;
+    preload("/marca/fondo-colinas-640.v1.avif", avif);
+    preload("/marca/ilustracion-gestante-sm.v1.avif", { ...avif, media: movil });
+    preload("/marca/ilustracion-gestante.v1.avif", { ...avif, media: escritorio });
 }

@@ -54,6 +54,28 @@ async function patron() {
     .extract({ left: 0, top: 0, width: 688, height: 768 })
     .resize({ width: 512 });
   await guardar(imagen, "patron", LIMITES.patron);
+
+  // Versión para el fondo del body de la gestante: dos repeticiones en vertical
+  // con la opacidad (7 %) y el desvanecido hacia abajo ya aplicados en el canal
+  // alfa. Una capa de fondo del body no admite opacity ni mask, y tiene que ir
+  // en el body porque Chrome no cuenta sus fondos como candidatos a LCP.
+  const tesela = await imagen.clone().png().toBuffer();
+  const { width: ancho, height: alto } = await sharp(tesela).metadata();
+  const doble = await sharp({ create: { width: ancho, height: alto * 2, channels: 3, background: "#fff" } })
+    .composite([{ input: tesela, top: 0, left: 0 }, { input: tesela, top: alto, left: 0 }])
+    .removeAlpha()
+    .raw()
+    .toBuffer();
+  const alfa = Buffer.alloc(ancho * alto * 2);
+  for (let y = 0; y < alto * 2; y++) {
+    const valor = Math.round(255 * 0.07 * (1 - y / (alto * 2)));
+    alfa.fill(valor, y * ancho, (y + 1) * ancho);
+  }
+  const tenue = await sharp(doble, { raw: { width: ancho, height: alto * 2, channels: 3 } })
+    .joinChannel(alfa, { raw: { width: ancho, height: alto * 2, channels: 1 } })
+    .png()
+    .toBuffer();
+  await guardar(sharp(tenue), "patron-tenue", LIMITES.patron);
 }
 
 // La ilustración se recorta del banner sin el texto incrustado y se le quita el
@@ -98,6 +120,9 @@ async function ilustracion() {
     .png()
     .toBuffer();
   await guardar(sharp(png).resize({ width: 560 }), "ilustracion-gestante", LIMITES.ilustracion);
+  // Variante para cajas de hasta ~120 px (saludo del panel, cabecera móvil del
+  // login): pesa una fracción y llega antes que el texto principal.
+  await guardar(sharp(png).resize({ width: 240 }), "ilustracion-gestante-sm", LIMITES.ilustracion);
 }
 
 await mkdir(destino, { recursive: true });

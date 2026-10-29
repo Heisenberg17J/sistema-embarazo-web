@@ -23,7 +23,7 @@ export function Vacio({
     return (
         <div className="flex flex-col items-center gap-3 py-8 text-center">
             {ilustracion === "color" ? (
-                <span aria-hidden className="ilustracion-color w-36" />
+                <span aria-hidden className="ilustracion-color ilustracion-grande w-36" />
             ) : (
                 <>
                     {ilustracion && <span aria-hidden className="ilustracion-gestante" />}
