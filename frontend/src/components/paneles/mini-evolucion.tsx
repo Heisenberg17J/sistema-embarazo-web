@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { Boton } from "@/components/ui/boton";
@@ -13,7 +14,14 @@ import { cn } from "@/lib/utils";
  * Resumen de evolución del panel: barras de peso por semana y las últimas
  * cifras. La gráfica completa, con ejes y umbrales, vive en /evolucion.
  */
-export function MiniEvolucion({ serie }: { serie: SerieMediciones }) {
+export function MiniEvolucion({
+    serie,
+    indice,
+}: {
+    serie: SerieMediciones;
+    /** Posición en la entrada escalonada del panel. */
+    indice?: number;
+}) {
     const pesos = porSemana(serie, "PESO");
     const sistolica = ultimoValor(serie, "PA_SISTOLICA");
     const diastolica = ultimoValor(serie, "PA_DIASTOLICA");
@@ -38,7 +46,7 @@ export function MiniEvolucion({ serie }: { serie: SerieMediciones }) {
     const previo = pesos.at(-2);
 
     return (
-        <Tarjeta className="lg:col-span-2">
+        <Tarjeta indice={indice} className="lg:col-span-2">
             <EncabezadoTarjeta
                 seccion="Evolución"
                 titulo="Peso y presión arterial"
@@ -67,10 +75,10 @@ export function MiniEvolucion({ serie }: { serie: SerieMediciones }) {
                         >
                             <div
                                 className={cn(
-                                    "w-full max-w-14 rounded-t-lg",
+                                    "barra-crece w-full max-w-14 rounded-t-lg",
                                     i === pesos.length - 1 ? "bg-brand" : "bg-brand/55",
                                 )}
-                                style={{ height: `${alto(p.valor)}%` }}
+                                style={{ height: `${alto(p.valor)}%`, "--i": i } as CSSProperties}
                             />
                             <span className="text-[10px] text-muted-foreground">
                                 S{p.semana}

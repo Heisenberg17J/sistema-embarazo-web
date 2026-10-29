@@ -1,5 +1,6 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import {
     CartesianGrid,
     Line,
@@ -25,6 +26,27 @@ const COLOR_UMBRAL: Record<string, string> = {
     INFORMATIVA: "var(--informativa-borde)",
 };
 
+const CONSULTA_MOVIMIENTO_REDUCIDO = "(prefers-reduced-motion: reduce)";
+
+/** Suscripción a la preferencia de movimiento reducido del sistema. */
+function suscribirMovimiento(avisar: () => void) {
+    const consulta = window.matchMedia(CONSULTA_MOVIMIENTO_REDUCIDO);
+    consulta.addEventListener("change", avisar);
+    return () => consulta.removeEventListener("change", avisar);
+}
+
+/**
+ * ¿Prefiere el usuario menos movimiento? En el servidor se asume que sí: la
+ * gráfica se pinta ya dibujada y solo anima si el navegador confirma que puede.
+ */
+function useMovimientoReducido() {
+    return useSyncExternalStore(
+        suscribirMovimiento,
+        () => window.matchMedia(CONSULTA_MOVIMIENTO_REDUCIDO).matches,
+        () => true,
+    );
+}
+
 /** Valor fijo al que apunta una regla, si lo tiene. */
 const valorDeReferencia = (r: Referencia) =>
     r.valor_referencia ?? r.valor_max ?? r.valor_min ?? null;
@@ -40,11 +62,16 @@ export function GraficaEvolucion({
     series,
     unidad,
     alto = 280,
+    animar = true,
 }: {
     series: Serie[];
     unidad: string;
     alto?: number;
+    /** Falso cuando la gráfica cambia por un filtro: ahí no se anima. */
+    animar?: boolean;
 }) {
+    const sinMovimiento = useMovimientoReducido();
+
     // Recharts necesita una fila por punto del eje X: se combinan las series
     // por semana de gestación.
     const porSemana = new Map<number, Record<string, number>>();
@@ -130,7 +157,9 @@ export function GraficaEvolucion({
                                 connectNulls
                                 dot={<Punto referencias={serie.referencias} />}
                                 activeDot={{ r: 6 }}
-                                isAnimationActive={false}
+                                isAnimationActive={animar && !sinMovimiento}
+                                animationDuration={500}
+                                animationEasing="ease-out"
                             />
                         ))}
 

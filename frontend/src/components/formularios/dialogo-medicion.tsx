@@ -2,11 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { HeartPulse, Plus, Save } from "lucide-react";
+import { HeartPulse, Plus, Save, Scale } from "lucide-react";
 import { registrarMedicion, type ResultadoRegistro } from "@/acciones/registros";
 import { CODIGOS_PRESION, TIPO_PRESION } from "@/lib/constantes";
 import { AvisoCritico } from "@/components/paneles/aviso-critico";
-import { Boton } from "@/components/ui/boton";
+import { Boton, DISPARADOR_TARJETA } from "@/components/ui/boton";
 import { AvisoExito } from "@/components/ui/aviso-exito";
 import { AvisoError, Campo } from "@/components/ui/campo";
 import { Dialogo } from "@/components/ui/dialogo";
@@ -19,9 +19,11 @@ interface Props {
     tipos: TipoMedicion[];
     contactoNombre?: string | null;
     contactoTelefono?: string | null;
+    /** "tarjeta": el disparador es una tarjeta táctil con icono en móvil (panel). */
+    presentacion?: "boton" | "tarjeta";
 }
 
-export function DialogoMedicion({ tipos, contactoNombre, contactoTelefono }: Props) {
+export function DialogoMedicion({ tipos, contactoNombre, contactoTelefono, presentacion = "boton" }: Props) {
     const router = useRouter();
     const [abierto, setAbierto] = useState(false);
     const [criticas, setCriticas] = useState<Alerta[]>([]);
@@ -41,8 +43,12 @@ export function DialogoMedicion({ tipos, contactoNombre, contactoTelefono }: Pro
 
     return (
         <>
-            <Boton variante="vidrio" onClick={() => setAbierto(true)}>
-                <Plus aria-hidden />
+            <Boton
+                variante="vidrio"
+                className={presentacion === "tarjeta" ? DISPARADOR_TARJETA : undefined}
+                onClick={() => setAbierto(true)}
+            >
+                {presentacion === "tarjeta" ? <Scale aria-hidden /> : <Plus aria-hidden />}
                 Medición
             </Boton>
 

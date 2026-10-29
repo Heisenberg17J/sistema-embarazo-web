@@ -45,10 +45,11 @@ export default async function PaginaExamenes({
                 subtitulo="Resultados registrados por tu profesional de salud. Si algo no te queda claro, pregúntale en tu próximo control."
             />
 
-            <Tarjeta id={ANCLA_LISTA} className="scroll-mt-4">
+            <Tarjeta indice={0} id={ANCLA_LISTA} className="scroll-mt-4">
                 {lista.datos.length === 0 ? (
                     <Vacio
                         icono={FlaskConical}
+                        ilustracion
                         titulo="Todavía no hay exámenes registrados"
                         descripcion="Tu profesional los irá registrando a medida que lleguen los resultados."
                     />

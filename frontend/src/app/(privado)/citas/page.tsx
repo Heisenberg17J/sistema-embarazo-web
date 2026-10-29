@@ -55,7 +55,7 @@ export default async function PaginaCitas() {
             />
 
             <div className="space-y-5">
-                <Tarjeta>
+                <Tarjeta indice={0}>
                     <EncabezadoTarjeta
                         seccion="Próximas"
                         accion={
@@ -71,6 +71,7 @@ export default async function PaginaCitas() {
                     {proximas.length === 0 ? (
                         <Vacio
                             icono={CalendarClock}
+                            ilustracion
                             titulo="No tienes citas programadas"
                             descripcion="Tu profesional de salud agenda los controles prenatales. Aparecerán aquí en cuanto lo haga."
                         />
@@ -83,7 +84,7 @@ export default async function PaginaCitas() {
                     )}
                 </Tarjeta>
 
-                <Tarjeta>
+                <Tarjeta indice={1}>
                     <EncabezadoTarjeta seccion="Anteriores" />
 
                     {anteriores.length === 0 ? (

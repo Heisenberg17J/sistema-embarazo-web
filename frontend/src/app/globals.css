@@ -468,6 +468,179 @@
         opacity: 0.05;
         filter: invert(1) hue-rotate(180deg);
     }
+
+    /* Ilustración en color de la gestante (560x696): caja de proporción fija,
+       el ancho lo pone quien la usa. Sobre el modo oscuro lleva un disco claro
+       detrás, porque el pelo marino se perdería contra el fondo. */
+    .ilustracion-color {
+        display: block;
+        aspect-ratio: 560 / 696;
+        background-image: url("/marca/ilustracion-gestante.v1.webp");
+        background-image: image-set(
+            url("/marca/ilustracion-gestante.v1.avif") type("image/avif"),
+            url("/marca/ilustracion-gestante.v1.webp") type("image/webp")
+        );
+        background-repeat: no-repeat;
+        background-size: contain;
+        background-position: center;
+    }
+
+    .dark .ilustracion-color {
+        background-image:
+            url("/marca/ilustracion-gestante.v1.webp"),
+            radial-gradient(closest-side, oklch(93% 0.03 265 / 0.6) 45%, transparent);
+        background-image:
+            image-set(
+                url("/marca/ilustracion-gestante.v1.avif") type("image/avif"),
+                url("/marca/ilustracion-gestante.v1.webp") type("image/webp")
+            ),
+            radial-gradient(closest-side, oklch(93% 0.03 265 / 0.6) 45%, transparent);
+    }
+
+    /* Panel ilustrado de las pantallas públicas: colinas de la marca de fondo
+       (variante de 640 px; la de 1280 solo en pantallas anchas) y el patrón
+       muy tenue encima. El fondo vive en pseudo-elementos para poder invertirlo
+       en modo oscuro sin tocar el texto. */
+    .panel-colinas {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+    }
+
+    .panel-colinas::before,
+    .panel-colinas::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    .panel-colinas::before {
+        background-color: oklch(92% 0.03 266);
+        background-image: url("/marca/fondo-colinas-640.v1.webp");
+        background-image: image-set(
+            url("/marca/fondo-colinas-640.v1.avif") type("image/avif"),
+            url("/marca/fondo-colinas-640.v1.webp") type("image/webp")
+        );
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: 42% 100%;
+    }
+
+    @media (min-width: 40rem) {
+        .panel-colinas::before {
+            background-image: url("/marca/fondo-colinas-1280.v1.webp");
+            background-image: image-set(
+                url("/marca/fondo-colinas-1280.v1.avif") type("image/avif"),
+                url("/marca/fondo-colinas-1280.v1.webp") type("image/webp")
+            );
+        }
+    }
+
+    .panel-colinas::after {
+        opacity: 0.05;
+        background-image: url("/marca/patron.v1.webp");
+        background-image: image-set(
+            url("/marca/patron.v1.avif") type("image/avif"),
+            url("/marca/patron.v1.webp") type("image/webp")
+        );
+        background-size: 320px auto;
+    }
+
+    .dark .panel-colinas::before {
+        filter: invert(1) hue-rotate(180deg);
+        opacity: 0.85;
+    }
+
+    .dark .panel-colinas::after {
+        opacity: 0.04;
+        filter: invert(1) hue-rotate(180deg);
+    }
+
+    /* Tarjeta principal del panel: las olas de la marca detrás del vidrio.
+       La zona marino de la imagen queda arriba a la izquierda, justo bajo el
+       encabezado, así que se espeja (arriba a la derecha) y se aclara hasta
+       dejar el texto en contraste AA. La franja mide lo que la imagen
+       (proporción 640:357) y se desvanece hacia abajo. */
+    .tarjeta-ondas {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+    }
+
+    .tarjeta-ondas::before {
+        content: "";
+        position: absolute;
+        inset: auto auto 0 0;
+        width: 100%;
+        aspect-ratio: 640 / 357;
+        z-index: -1;
+        pointer-events: none;
+        opacity: 0.85;
+        background-image: url("/marca/fondo-ondas-640.v1.webp");
+        background-image: image-set(
+            url("/marca/fondo-ondas-640.v1.avif") type("image/avif"),
+            url("/marca/fondo-ondas-640.v1.webp") type("image/webp")
+        );
+        background-repeat: no-repeat;
+        /* Ampliada y anclada a la derecha: la esquina marino, que sobre el
+           vidrio blanco se agrisaba, queda fuera y solo entran las olas. */
+        background-size: 165% 115%;
+        background-position: right top;
+        /* Volteada en vertical: las olas quedan abajo, detrás del anillo (que es
+           opaco), y se desvanecen hacia el texto. */
+        transform: scaleY(-1);
+        /* La máscara se aplica antes del volteo: "0 0" acaba abajo a la izquierda. */
+        mask-image: radial-gradient(130% 100% at 0 0, black 25%, transparent 65%);
+    }
+
+    @media (min-width: 40rem) {
+        .tarjeta-ondas::before {
+            background-image: url("/marca/fondo-ondas-1280.v1.webp");
+            background-image: image-set(
+                url("/marca/fondo-ondas-1280.v1.avif") type("image/avif"),
+                url("/marca/fondo-ondas-1280.v1.webp") type("image/webp")
+            );
+        }
+    }
+
+    .dark .tarjeta-ondas::before {
+        opacity: 0.16;
+        filter: invert(1) hue-rotate(180deg);
+    }
+
+    /* Anillo de gestación: --progreso (grados) lo fija el componente en línea y
+       el keyframe lo lleva desde 0 al montar. Sin @property o con movimiento
+       reducido se ve lleno al instante. */
+    .anillo-gestacion {
+        background: conic-gradient(
+            var(--brand) 0deg calc(var(--progreso) * 1deg),
+            color-mix(in oklab, var(--brand-suave) 55%, transparent) calc(var(--progreso) * 1deg) 360deg
+        );
+        animation: llenar-anillo 900ms var(--ease-out) both;
+    }
+
+    /* Miniatura del patrón de marca para las tarjetas de contenido. */
+    .miniatura-patron {
+        display: block;
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 1rem;
+        background-color: color-mix(in oklab, var(--brand-suave) 30%, transparent);
+        background-image: url("/marca/patron.v1.webp");
+        background-image: image-set(
+            url("/marca/patron.v1.avif") type("image/avif"),
+            url("/marca/patron.v1.webp") type("image/webp")
+        );
+        background-size: 128px auto;
+        background-position: center;
+    }
+
+    .dark .miniatura-patron {
+        filter: invert(1) hue-rotate(180deg);
+        opacity: 0.6;
+    }
 }
 
 /* Quien pide menos transparencia recibe superficies opacas y legibles. */

@@ -22,7 +22,7 @@ export default async function PaginaMas() {
                 subtitulo={`${sesion.nombre} ${sesion.apellido} · ${ROL_TEXTO[sesion.rol]}`}
             />
 
-            <Tarjeta className="p-2 sm:p-2">
+            <Tarjeta indice={0} className="p-2 sm:p-2">
                 <ul>
                     {secundarios.map((item) => (
                         <li key={item.href}>

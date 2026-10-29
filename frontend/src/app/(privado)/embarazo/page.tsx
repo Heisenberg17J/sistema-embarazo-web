@@ -38,7 +38,7 @@ export default async function PaginaMiEmbarazo() {
 
             <div className="space-y-5">
                 {actual ? (
-                    <Tarjeta>
+                    <Tarjeta indice={0}>
                         <EncabezadoTarjeta
                             seccion="Embarazo actual"
                             accion={<Insignia tono="marca">{nombreTrimestre(actual.trimestre)}</Insignia>}
@@ -94,9 +94,10 @@ export default async function PaginaMiEmbarazo() {
                         </div>
                     </Tarjeta>
                 ) : (
-                    <Tarjeta>
+                    <Tarjeta indice={0}>
                         <Vacio
                             icono={Baby}
+                            ilustracion="color"
                             titulo="No tienes un embarazo en curso"
                             descripcion={
                                 anteriores.length > 0
@@ -116,7 +117,7 @@ export default async function PaginaMiEmbarazo() {
                 )}
 
                 {anteriores.length > 0 && (
-                    <Tarjeta>
+                    <Tarjeta indice={1}>
                         <EncabezadoTarjeta
                             seccion="Historial"
                             titulo="Embarazos anteriores"

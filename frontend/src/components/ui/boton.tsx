@@ -63,3 +63,10 @@ export function Boton({
 }
 
 export { variantes as variantesBoton };
+
+/**
+ * Presentación de un disparador de diálogo como tarjeta táctil en móvil
+ * (icono sobre el texto, 72 px de alto); desde sm vuelve a ser un botón normal.
+ */
+export const DISPARADOR_TARJETA =
+    "max-sm:h-auto max-sm:min-h-[4.5rem] max-sm:flex-col max-sm:gap-1.5 max-sm:rounded-2xl max-sm:px-3 max-sm:py-3 max-sm:text-base max-sm:[&_svg]:size-6";
