@@ -38,7 +38,7 @@ export default async function PaginaPacientes({
                 }
             />
 
-            <Tarjeta>
+            <Tarjeta indice={0}>
                 {/* Formulario GET: deja la búsqueda en la URL. Con next/form navega
                     sin recargar la página ni subir al inicio. */}
                 <Form scroll={false} action="/pro/pacientes" className="flex gap-2">

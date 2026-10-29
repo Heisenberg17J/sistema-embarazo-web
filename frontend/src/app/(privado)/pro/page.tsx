@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BellRing, CalendarClock, CalendarPlus, ChevronRight, Stethoscope } from "lucide-react";
@@ -30,14 +31,21 @@ export default async function PaginaPanelProfesional() {
 
     return (
         <>
-            <Saludo
-                nombre={sesion.nombre}
-                subtitulo={
-                    resumen.pacientes === 0
-                        ? "Todavía no tienes pacientes asignadas. El administrador se encarga de asignarlas."
-                        : `Tienes ${resumen.pacientes} ${resumen.pacientes === 1 ? "paciente asignada" : "pacientes asignadas"}.`
-                }
-            />
+            <div className="relative">
+                {/* Decorativa y a la derecha: el texto del saludo queda fuera de ella. */}
+                <span
+                    aria-hidden
+                    className="fondo-linea-tenue pointer-events-none absolute -top-3 right-0 hidden lg:block"
+                />
+                <Saludo
+                    nombre={sesion.nombre}
+                    subtitulo={
+                        resumen.pacientes === 0
+                            ? "Todavía no tienes pacientes asignadas. El administrador se encarga de asignarlas."
+                            : `Tienes ${resumen.pacientes} ${resumen.pacientes === 1 ? "paciente asignada" : "pacientes asignadas"}.`
+                    }
+                />
+            </div>
 
             <div className="space-y-5">
                 {/* Lo que el sistema le dice a las gestantes necesita el aval de un
@@ -108,10 +116,11 @@ export default async function PaginaPanelProfesional() {
                             />
                         ) : (
                             <ul className="mt-4 space-y-3">
-                                {datos.citas_hoy.map((cita) => (
+                                {datos.citas_hoy.map((cita, i) => (
                                     <li
                                         key={cita.id}
-                                        className="glass-soft rounded-2xl p-4"
+                                        className="glass-soft entrada rounded-2xl p-4"
+                                        style={{ "--i": i } as CSSProperties}
                                     >
                                         <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
                                             <div className="min-w-0">
@@ -168,11 +177,20 @@ export default async function PaginaPanelProfesional() {
                             />
                         ) : (
                             <div className="mt-4 space-y-3">
-                                {datos.alertas_prioritarias.slice(0, 5).map((alerta) => (
+                                {datos.alertas_prioritarias.slice(0, 5).map((alerta, i) => (
                                     <Link
                                         key={alerta.id}
                                         href={`/pro/pacientes/${alerta.gestante_usuario_id}?seccion=alertas`}
-                                        className="block rounded-2xl transition-opacity hover:opacity-80"
+                                        // Las críticas aparecen de inmediato: la información clínica no espera.
+                                        className={cn(
+                                            "block rounded-2xl transition-opacity hover:opacity-80",
+                                            alerta.severidad !== "CRITICA" && "entrada",
+                                        )}
+                                        style={
+                                            alerta.severidad !== "CRITICA"
+                                                ? ({ "--i": i } as CSSProperties)
+                                                : undefined
+                                        }
                                     >
                                         <AlertaItem
                                             severidad={alerta.severidad}
@@ -208,13 +226,13 @@ function Dato({
 }) {
     return (
         <Link href={href} className="block">
-            <Panel className="h-full transition-colors hover:bg-surface-strong">
+            <Panel className="elevable h-full hover:bg-surface-strong">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
                     {etiqueta}
                 </p>
                 <p
                     className={cn(
-                        "mt-1 font-display text-3xl font-semibold",
+                        "entrada mt-1 font-display text-3xl font-semibold",
                         tono === "critica" && "text-critica",
                         tono === "advertencia" && "text-advertencia",
                     )}

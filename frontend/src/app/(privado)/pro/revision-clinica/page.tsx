@@ -34,7 +34,7 @@ export default async function PaginaRevisionClinica() {
             />
 
             <div className="space-y-5">
-                <Tarjeta>
+                <Tarjeta indice={0}>
                     <div className="flex items-center gap-3">
                         {revision.pendientes === 0 ? (
                             <CircleCheck className="size-6 shrink-0 text-exito" aria-hidden />
@@ -60,7 +60,7 @@ export default async function PaginaRevisionClinica() {
                     </p>
                 </Tarjeta>
 
-                <Tarjeta>
+                <Tarjeta indice={1}>
                     <EncabezadoTarjeta
                         seccion="Valores de referencia"
                         titulo="Reglas de alerta"
@@ -87,7 +87,7 @@ export default async function PaginaRevisionClinica() {
                     )}
                 </Tarjeta>
 
-                <Tarjeta>
+                <Tarjeta indice={2}>
                     <EncabezadoTarjeta
                         seccion="Síntomas"
                         titulo="Signos de alarma"

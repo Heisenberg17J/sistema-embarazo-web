@@ -15,7 +15,9 @@ export function TarjetaPaciente({ paciente }: { paciente: Paciente }) {
         <Link
             href={`/pro/pacientes/${paciente.gestante_usuario_id}`}
             className={cn(
-                "glass-soft block rounded-2xl p-4 transition-colors hover:bg-surface-strong",
+                "glass-soft elevable block rounded-2xl p-4 hover:bg-surface-strong",
+                // Anillo de 2 px en el color --ring (outline global), separado de la tarjeta.
+                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
                 criticas && "border-l-4 border-l-critica-borde",
             )}
         >

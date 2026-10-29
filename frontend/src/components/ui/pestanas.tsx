@@ -60,7 +60,7 @@ export function Pestanas({
                                 scroll={false}
                                 aria-current={activa ? "page" : undefined}
                                 className={cn(
-                                    "inline-flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors",
+                                    "inline-flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-150",
                                     activa
                                         ? "bg-surface-strong text-brand-deep"
                                         : "text-muted-foreground hover:bg-surface-soft hover:text-foreground",

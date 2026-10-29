@@ -469,6 +469,30 @@
         filter: invert(1) hue-rotate(180deg);
     }
 
+    /* Línea de la gestante del fondo de marca, muy tenue, para la cabecera del
+       panel del profesional (solo lg+, decorativa). Variante de 1280 px mostrada
+       a un cuarto (320x178): la figura queda entre x 220-310 e y 27-159. */
+    .fondo-linea-tenue {
+        display: block;
+        width: 6rem;
+        height: 8.5rem;
+        opacity: 0.3;
+        background-image: url("/marca/fondo-linea-1280.v1.webp");
+        background-image: image-set(
+            url("/marca/fondo-linea-1280.v1.avif") type("image/avif"),
+            url("/marca/fondo-linea-1280.v1.webp") type("image/webp")
+        );
+        background-repeat: no-repeat;
+        background-size: 320px 178px;
+        background-position: -216px -25px;
+        mask-image: radial-gradient(closest-side, black 55%, transparent);
+    }
+
+    .dark .fondo-linea-tenue {
+        opacity: 0.2;
+        filter: invert(1) hue-rotate(180deg);
+    }
+
     /* Ilustración en color de la gestante (560x696): caja de proporción fija,
        el ancho lo pone quien la usa. Sobre el modo oscuro lleva un disco claro
        detrás, porque el pelo marino se perdería contra el fondo. */

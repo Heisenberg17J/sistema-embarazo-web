@@ -82,7 +82,7 @@ export default async function PaginaAgenda({
             />
 
             <div className="space-y-5">
-                <Tarjeta>
+                <Tarjeta indice={0}>
                     {/* Formulario GET: el rango queda en la URL y se puede compartir. */}
                     <form
                         action="/pro/agenda"
