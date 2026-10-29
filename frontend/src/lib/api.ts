@@ -1,3 +1,4 @@
+import { ESTADOS_ARRANCANDO, fetchConReintentos } from "@/lib/reintentos";
 import { cookies } from "next/headers";
 import { COOKIES } from "./sesion";
 
@@ -61,7 +62,7 @@ async function pedir<T>(ruta: string, opciones: Opciones = {}): Promise<T> {
 
     let respuesta: Response;
     try {
-        respuesta = await fetch(`${API_URL}${ruta}`, {
+        respuesta = await fetchConReintentos(`${API_URL}${ruta}`, {
             ...resto,
             headers: cabeceras,
             body: body === undefined ? undefined : JSON.stringify(body),
@@ -89,9 +90,14 @@ async function pedir<T>(ruta: string, opciones: Opciones = {}): Promise<T> {
 
     if (!respuesta.ok) {
         const datos = (cuerpo ?? {}) as { error?: string; detalles?: unknown };
+        // Un 502/503/504 sin cuerpo JSON es el proxy diciendo que la API no contesta (arrancando).
+        const sinServidor = !datos.error && ESTADOS_ARRANCANDO.includes(respuesta.status);
         throw new ErrorApi(
             respuesta.status,
-            datos.error ?? "Ocurrió un error inesperado",
+            datos.error ??
+                (sinServidor
+                    ? "El servidor está arrancando. Espera unos segundos e intenta de nuevo."
+                    : "Ocurrió un error inesperado"),
             datos.detalles as DetalleCampo[] | undefined,
         );
     }
