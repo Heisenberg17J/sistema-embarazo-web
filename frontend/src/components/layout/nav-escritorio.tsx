@@ -27,13 +27,25 @@ export function NavEscritorio({ rol }: { rol: Rol }) {
                         href={item.href}
                         aria-current={activo ? "page" : undefined}
                         className={cn(
-                            "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors",
+                            "relative isolate inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors",
                             activo
-                                ? "bg-surface-strong text-brand-deep"
+                                ? "text-brand-deep"
                                 : "text-muted-foreground hover:bg-surface-soft hover:text-foreground",
                         )}
                     >
-                        <item.icono className="size-4" aria-hidden />
+                        {activo && (
+                            <span
+                                aria-hidden
+                                className="absolute inset-0 -z-10 rounded-full bg-surface-strong animate-[aparecer-escala_var(--dur-base)_var(--ease-out)]"
+                            />
+                        )}
+                        <item.icono
+                            className={cn(
+                                "size-4",
+                                activo && "animate-[rebote-icono_320ms_var(--ease-out)]",
+                            )}
+                            aria-hidden
+                        />
                         {item.texto}
                     </Link>
                 );

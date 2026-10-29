@@ -417,6 +417,29 @@
         animation-delay: calc(min(var(--i, 0), 10) * 30ms);
     }
 
+    /* Arte lineal de la gestante recortado del fondo de marca (640x357): la
+       figura ocupa aprox. del 69 % al 97 % del ancho. Caja de tamaño fijo, sin
+       salto de layout; los bordes se desvanecen para no dejar un rectángulo. */
+    .ilustracion-gestante {
+        display: block;
+        width: 7rem;
+        height: 9rem;
+        background-image: url("/marca/fondo-linea-640.v1.webp");
+        background-image: image-set(
+            url("/marca/fondo-linea-640.v1.avif") type("image/avif"),
+            url("/marca/fondo-linea-640.v1.webp") type("image/webp")
+        );
+        background-repeat: no-repeat;
+        background-size: 355px 198px;
+        background-position: -238px -27px;
+        mask-image: radial-gradient(closest-side, black 62%, transparent);
+    }
+
+    .dark .ilustracion-gestante {
+        opacity: 0.45;
+        filter: invert(1) hue-rotate(180deg);
+    }
+
     /* Patrón de la gestante: solo detrás de su marco, tenue y desvanecido
        hacia abajo para no competir con el contenido. */
     [data-rol="gestante"] {

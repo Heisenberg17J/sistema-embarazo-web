@@ -7,14 +7,18 @@ export function Vacio({
     titulo,
     descripcion,
     accion,
+    ilustracion = false,
 }: {
     icono: LucideIcon;
     titulo: string;
     descripcion?: string;
     accion?: ReactNode;
+    /** Muestra encima del texto el arte lineal de la gestante (decorativo). */
+    ilustracion?: boolean;
 }) {
     return (
         <div className="flex flex-col items-center gap-3 py-8 text-center">
+            {ilustracion && <span aria-hidden className="ilustracion-gestante" />}
             <span className="grid size-12 place-items-center rounded-2xl bg-surface-soft text-muted-foreground">
                 <Icono className="size-5" aria-hidden />
             </span>

@@ -4,7 +4,14 @@ import { cn } from "@/lib/utils";
 export function Esqueleto({ className }: { className?: string }) {
     return (
         <div
-            className={cn("animate-pulse rounded-xl bg-surface-strong", className)}
+            aria-hidden
+            // El brillo es un degradado que cruza el bloque con translateX.
+            // Con movimiento reducido se oculta: no queda ninguna franja fija.
+            className={cn(
+                "relative overflow-hidden rounded-xl bg-surface-strong",
+                "after:absolute after:inset-0 after:bg-gradient-to-r after:from-transparent after:via-white/45 after:to-transparent after:animate-[brillo_1.4s_linear_infinite] dark:after:via-white/10 motion-reduce:after:hidden",
+                className,
+            )}
         />
     );
 }

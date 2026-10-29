@@ -115,7 +115,7 @@ export function AvisoError({ children }: { children: ReactNode }) {
     return (
         <p
             role="alert"
-            className="flex items-start gap-2 rounded-2xl bg-critica-suave px-4 py-3 text-base sm:text-sm font-medium text-critica"
+            className="animate-[aparecer_var(--dur-entrada)_var(--ease-out)_both] flex items-start gap-2 rounded-2xl bg-critica-suave px-4 py-3 text-base sm:text-sm font-medium text-critica"
         >
             <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
             {children}

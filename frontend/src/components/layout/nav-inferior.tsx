@@ -30,11 +30,18 @@ export function NavInferior({ rol }: { rol: Rol }) {
                                 href={item.href}
                                 aria-current={activo ? "page" : undefined}
                                 className={cn(
-                                    "flex min-h-16 flex-col items-center justify-center gap-0.5 px-1 py-2 text-[11px] font-semibold transition-colors",
+                                    "relative isolate flex min-h-16 flex-col items-center justify-center gap-0.5 px-1 py-2 text-[11px] font-semibold transition-colors",
                                     activo ? "text-brand-deep" : "text-muted-foreground",
                                 )}
                             >
-                                <item.icono className="size-6" aria-hidden />
+                                {activo && <Pastilla />}
+                                <item.icono
+                                    className={cn(
+                                        "size-6",
+                                        activo && "animate-[rebote-icono_320ms_var(--ease-out)]",
+                                    )}
+                                    aria-hidden
+                                />
                                 <span className="truncate">{item.corto ?? item.texto}</span>
                             </Link>
                         </li>
@@ -46,16 +53,33 @@ export function NavInferior({ rol }: { rol: Rol }) {
                             href="/mas"
                             aria-current={enSecundario ? "page" : undefined}
                             className={cn(
-                                "flex min-h-16 flex-col items-center justify-center gap-0.5 px-1 py-2 text-[11px] font-semibold transition-colors",
+                                "relative isolate flex min-h-16 flex-col items-center justify-center gap-0.5 px-1 py-2 text-[11px] font-semibold transition-colors",
                                 enSecundario ? "text-brand-deep" : "text-muted-foreground",
                             )}
                         >
-                            <MoreHorizontal className="size-6" aria-hidden />
+                            {enSecundario && <Pastilla />}
+                            <MoreHorizontal
+                                className={cn(
+                                    "size-6",
+                                    enSecundario && "animate-[rebote-icono_320ms_var(--ease-out)]",
+                                )}
+                                aria-hidden
+                            />
                             <span>Más</span>
                         </Link>
                     </li>
                 )}
             </ul>
         </nav>
+    );
+}
+
+/** Fondo del ítem activo: nace al montarse, o sea al pasar a ser el activo. */
+function Pastilla() {
+    return (
+        <span
+            aria-hidden
+            className="absolute inset-x-2 inset-y-1.5 -z-10 rounded-2xl bg-surface-strong animate-[aparecer-escala_var(--dur-base)_var(--ease-out)]"
+        />
     );
 }

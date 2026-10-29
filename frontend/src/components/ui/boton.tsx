@@ -4,7 +4,7 @@ import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
 const variantes = cva(
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-base font-semibold transition-colors sm:text-sm disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-5 sm:[&_svg]:size-4 [&_svg]:shrink-0",
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-base font-semibold transition-[color,background-color,border-color,box-shadow,filter,opacity,transform] duration-150 ease-out active:not-disabled:scale-[0.97] sm:text-sm disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-5 sm:[&_svg]:size-4 [&_svg]:shrink-0",
     {
         variants: {
             variante: {

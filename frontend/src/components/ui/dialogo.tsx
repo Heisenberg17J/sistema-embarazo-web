@@ -30,14 +30,17 @@ export function Dialogo({
         <Dialog.Root open={abierto} onOpenChange={onCambio}>
             {disparador && <Dialog.Trigger asChild>{disparador}</Dialog.Trigger>}
             <Dialog.Portal>
-                <Dialog.Overlay className="fixed inset-0 z-50 bg-foreground/35 backdrop-blur-sm" />
+                <Dialog.Overlay className="fixed inset-0 z-50 bg-foreground/35 backdrop-blur-sm data-[state=open]:animate-[fundido_var(--dur-base)_var(--ease-out)] data-[state=closed]:animate-[fundido-salida_150ms_var(--ease-out)_forwards]" />
                 <Dialog.Content
                     className={cn(
                         "fixed z-50 flex max-h-[92dvh] flex-col overflow-hidden border border-border-firme bg-popover text-popover-foreground shadow-elevada",
-                        // Móvil: hoja inferior a todo lo ancho
+                        // Móvil: hoja inferior que sube (320 ms) y baja más rápido (200 ms)
+                        "data-[state=open]:animate-[subir-cajon_320ms_var(--ease-cajon)] data-[state=closed]:animate-[bajar-cajon_200ms_var(--ease-cajon)_forwards]",
                         "inset-x-0 bottom-0 rounded-t-3xl pb-[env(safe-area-inset-bottom)]",
-                        // Escritorio: tarjeta centrada
-                        "sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl sm:pb-0",
+                        // Escritorio: tarjeta centrada con inset-0 + margen automático
+                        // (sin translate, que la animación de transform pisaría)
+                        "sm:inset-0 sm:m-auto sm:h-fit sm:w-full sm:max-w-lg sm:rounded-3xl sm:pb-0",
+                        "sm:data-[state=open]:animate-[aparecer-escala_var(--dur-base)_var(--ease-out)] sm:data-[state=closed]:animate-[desaparecer-escala_150ms_var(--ease-out)_forwards]",
                         className,
                     )}
                 >

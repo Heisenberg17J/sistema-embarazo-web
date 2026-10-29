@@ -67,7 +67,7 @@ export function MiniEvolucion({ serie }: { serie: SerieMediciones }) {
                         >
                             <div
                                 className={cn(
-                                    "w-full max-w-14 rounded-t-lg transition-all",
+                                    "w-full max-w-14 rounded-t-lg",
                                     i === pesos.length - 1 ? "bg-brand" : "bg-brand/55",
                                 )}
                                 style={{ height: `${alto(p.valor)}%` }}

@@ -1,20 +1,41 @@
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps, CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
+/** Fusiona el índice de entrada escalonada (--i) con el style recibido. */
+function estiloEntrada(indice: number | undefined, style?: CSSProperties) {
+    if (indice === undefined) return style;
+    return { "--i": indice, ...style } as CSSProperties;
+}
+
 /** Tarjeta de vidrio, la superficie principal de la app. */
-export function Tarjeta({ className, ...props }: ComponentProps<"section">) {
+export function Tarjeta({
+    className,
+    indice,
+    style,
+    ...props
+}: ComponentProps<"section"> & { indice?: number }) {
     return (
         <section
-            className={cn("glass rounded-3xl p-5 sm:p-6", className)}
+            className={cn("glass rounded-3xl p-5 sm:p-6", indice !== undefined && "entrada", className)}
+            style={estiloEntrada(indice, style)}
             {...props}
         />
     );
 }
 
 /** Subtarjeta: va dentro de una Tarjeta. */
-export function Panel({ className, ...props }: ComponentProps<"div">) {
+export function Panel({
+    className,
+    indice,
+    style,
+    ...props
+}: ComponentProps<"div"> & { indice?: number }) {
     return (
-        <div className={cn("glass-soft rounded-2xl p-4", className)} {...props} />
+        <div
+            className={cn("glass-soft rounded-2xl p-4", indice !== undefined && "entrada", className)}
+            style={estiloEntrada(indice, style)}
+            {...props}
+        />
     );
 }
 
