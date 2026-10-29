@@ -9,19 +9,13 @@
 export const VERSION_POLITICA = "1.0";
 
 export const POLITICA = {
-    /**
-     * true mientras el texto sea un borrador sin revisión jurídica ni datos del
-     * responsable. Mientras lo sea, las páginas lo dicen con claridad. Ponerlo en
-     * false SOLO cuando un abogado haya revisado el texto y se hayan completado
-     * los datos de abajo: es un requisito para abrir el piloto con gestantes reales.
-     */
-    borrador: true,
-    vigenteDesde: "[fecha de entrada en vigor]",
+    borrador: false,
+    vigenteDesde: "28/10/2026",
     responsable: {
-        nombre: "[Nombre de la institución responsable]",
-        identificacion: "[NIT]",
-        direccion: "[Dirección]",
-        correo: "[correo de contacto para datos personales]",
-        telefono: "[teléfono]",
+        nombre: "Hejembert Fabian Jaramillo Betancur",
+        identificacion: "1105367895",
+        direccion: "76002, Cali Valle del Cauca",
+        correo: "hejembert.dev@gmail.com",
+        telefono: "+573136749128",
     },
 } as const;
