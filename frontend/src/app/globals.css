@@ -191,6 +191,11 @@
         -webkit-text-size-adjust: 100%;
     }
 
+    /* Interlineado cómodo para leer en pantallas pequeñas. */
+    body {
+        line-height: 1.55;
+    }
+
     body {
         background-color: var(--background);
         color: var(--foreground);
@@ -242,8 +247,15 @@
 
     /* Área táctil mínima de 44px para manos con prisa o malestar. */
     .toque {
-        min-height: 2.75rem;
-        min-width: 2.75rem;
+        min-height: 3rem;
+        min-width: 3rem;
+    }
+
+    @media (min-width: 40rem) {
+        .toque {
+            min-height: 2.75rem;
+            min-width: 2.75rem;
+        }
     }
 }
 

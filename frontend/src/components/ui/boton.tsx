@@ -4,7 +4,7 @@ import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
 const variantes = cva(
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-semibold transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0",
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-base font-semibold transition-colors sm:text-sm disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-5 sm:[&_svg]:size-4 [&_svg]:shrink-0",
     {
         variants: {
             variante: {
@@ -20,11 +20,11 @@ const variantes = cva(
                     "bg-destructive text-destructive-foreground hover:brightness-110",
             },
             tamano: {
-                sm: "h-9 px-4 text-sm",
-                md: "toque px-5 text-sm",
-                lg: "h-12 px-6 text-base",
+                sm: "h-11 px-4 sm:h-9",
+                md: "toque px-6 sm:px-5",
+                lg: "h-14 px-7 text-lg sm:h-12 sm:px-6 sm:text-base",
                 icono: "toque px-0",
-                iconoSm: "size-9 px-0",
+                iconoSm: "size-11 px-0 sm:size-9",
             },
             ancho: {
                 auto: "",

@@ -30,11 +30,11 @@ export function NavInferior({ rol }: { rol: Rol }) {
                                 href={item.href}
                                 aria-current={activo ? "page" : undefined}
                                 className={cn(
-                                    "flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 py-2 text-[10px] font-semibold transition-colors",
+                                    "flex min-h-16 flex-col items-center justify-center gap-0.5 px-1 py-2 text-[11px] font-semibold transition-colors",
                                     activo ? "text-brand-deep" : "text-muted-foreground",
                                 )}
                             >
-                                <item.icono className="size-5" aria-hidden />
+                                <item.icono className="size-6" aria-hidden />
                                 <span className="truncate">{item.corto ?? item.texto}</span>
                             </Link>
                         </li>
@@ -46,11 +46,11 @@ export function NavInferior({ rol }: { rol: Rol }) {
                             href="/mas"
                             aria-current={enSecundario ? "page" : undefined}
                             className={cn(
-                                "flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 py-2 text-[10px] font-semibold transition-colors",
+                                "flex min-h-16 flex-col items-center justify-center gap-0.5 px-1 py-2 text-[11px] font-semibold transition-colors",
                                 enSecundario ? "text-brand-deep" : "text-muted-foreground",
                             )}
                         >
-                            <MoreHorizontal className="size-5" aria-hidden />
+                            <MoreHorizontal className="size-6" aria-hidden />
                             <span>Más</span>
                         </Link>
                     </li>

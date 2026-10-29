@@ -6,7 +6,7 @@ export function AvisoExito({ children }: { children: ReactNode }) {
     return (
         <p
             role="status"
-            className="flex items-start gap-2 rounded-2xl bg-exito-suave px-4 py-3 text-sm font-medium text-exito"
+            className="flex items-start gap-2 rounded-2xl bg-exito-suave px-4 py-3 text-base sm:text-sm font-medium text-exito"
         >
             <CheckCircle2 className="mt-0.5 size-4 shrink-0" aria-hidden />
             {children}

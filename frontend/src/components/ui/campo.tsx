@@ -6,7 +6,7 @@ import { useId, type ComponentProps, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 const baseControl =
-    "w-full rounded-2xl border border-border-firme bg-input px-4 text-foreground placeholder:text-muted-foreground/70 transition-colors focus:border-ring disabled:opacity-60 aria-[invalid=true]:border-critica";
+    "w-full rounded-2xl border border-border-firme bg-input px-4 text-base text-foreground sm:text-sm placeholder:text-muted-foreground/70 transition-colors focus:border-ring disabled:opacity-60 aria-[invalid=true]:border-critica";
 
 /**
  * Campo de formulario con etiqueta, ayuda y error.
@@ -47,7 +47,7 @@ export function Campo({
         <div className={cn("space-y-1.5", className)}>
             <LabelPrimitive.Root
                 htmlFor={idCampo}
-                className="block text-sm font-medium text-foreground"
+                className="block text-base font-medium text-foreground sm:text-sm"
             >
                 {etiqueta}
                 {obligatorio && (
@@ -66,18 +66,18 @@ export function Campo({
                 id: idCampo,
                 "aria-invalid": Boolean(error),
                 "aria-describedby": descrito,
-                className: cn(baseControl, "h-11"),
+                className: cn(baseControl, "h-12 sm:h-11"),
             })}
 
             {ayuda && !error && (
-                <p id={idAyuda} className="text-xs text-muted-foreground">
+                <p id={idAyuda} className="text-sm text-muted-foreground sm:text-xs">
                     {ayuda}
                 </p>
             )}
             {error && (
                 <p
                     id={idError}
-                    className="flex items-start gap-1.5 text-xs font-medium text-critica"
+                    className="flex items-start gap-1.5 text-sm font-medium text-critica sm:text-xs"
                 >
                     <AlertCircle className="mt-px size-3.5 shrink-0" aria-hidden />
                     {error}
@@ -88,13 +88,13 @@ export function Campo({
 }
 
 export function Entrada({ className, ...props }: ComponentProps<"input">) {
-    return <input className={cn(baseControl, "h-11", className)} {...props} />;
+    return <input className={cn(baseControl, "h-12 sm:h-11", className)} {...props} />;
 }
 
 export function AreaTexto({ className, ...props }: ComponentProps<"textarea">) {
     return (
         <textarea
-            className={cn(baseControl, "min-h-24 py-3 leading-relaxed", className)}
+            className={cn(baseControl, "min-h-28 py-3 leading-relaxed", className)}
             {...props}
         />
     );
@@ -103,7 +103,7 @@ export function AreaTexto({ className, ...props }: ComponentProps<"textarea">) {
 export function Seleccion({ className, ...props }: ComponentProps<"select">) {
     return (
         <select
-            className={cn(baseControl, "h-11 appearance-none pr-10", className)}
+            className={cn(baseControl, "h-12 appearance-none pr-10 sm:h-11", className)}
             {...props}
         />
     );
@@ -115,7 +115,7 @@ export function AvisoError({ children }: { children: ReactNode }) {
     return (
         <p
             role="alert"
-            className="flex items-start gap-2 rounded-2xl bg-critica-suave px-4 py-3 text-sm font-medium text-critica"
+            className="flex items-start gap-2 rounded-2xl bg-critica-suave px-4 py-3 text-base sm:text-sm font-medium text-critica"
         >
             <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
             {children}
